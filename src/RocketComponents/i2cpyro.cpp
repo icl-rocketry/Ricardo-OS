@@ -63,6 +63,15 @@ _wire(wire)
 
 };
 
+void I2CPyro::arm(){
+    //verify the only flag triggered is the unarmed flag
+    if (_state.getStatus() == static_cast<uint16_t>(COMPONENT_STATUS_FLAGS::DISARMED))
+    {
+        _state.newFlag(COMPONENT_STATUS_FLAGS::NOMINAL); // arm this shit
+    }else{
+        _logcontroller.log("Pyro: " + std::to_string(_id) + " arming failed due to errors: " + std::to_string(_state.getStatus()));
+    }
+}
 
 void I2CPyro::execute(int32_t param)
 {
@@ -72,7 +81,7 @@ void I2CPyro::execute(int32_t param)
     }
     if (_state.flagSet(COMPONENT_STATUS_FLAGS::DISARMED))
     {
-        _logcontroller.log("Pyor" + std::to_string(_id) + " tried firing while disarmed!");
+        _logcontroller.log("Pyro: " + std::to_string(_id) + " tried firing while disarmed!");
         return;
     }
 
@@ -92,7 +101,11 @@ void I2CPyro::execute(int32_t param)
 
     // initialize new task data
     TaskData_t taskdata{_address, _nukePin, param, _wire};
-
+    
+    if (async_off_task_handle != nullptr)
+    {
+        vTaskDelete(async_off_task_handle); // remove previous running task and replace with new task
+    }
     // spawn task to switch off pin given timeout param wiht higher prioirty so sleeping starts immediatley and non static task data is copied immediatley
     xTaskCreatePinnedToCore([](void *pvParameters)
                             {
@@ -124,7 +137,7 @@ void I2CPyro::execute(int32_t param)
                             1000,
                             (void *)&taskdata,
                             2,
-                            NULL,
+                            &async_off_task_handle,
                             1);
 };
 

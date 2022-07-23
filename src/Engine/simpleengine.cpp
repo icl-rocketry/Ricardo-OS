@@ -67,3 +67,6 @@ void SimpleEngine::shutdown(){ // the engine cant be shut down
     _state.shutdownTime = millis();
 }
 
+void SimpleEngine::armEngine(){
+    _igniter->arm();
+}

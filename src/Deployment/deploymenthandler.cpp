@@ -72,3 +72,13 @@ uint8_t DeploymentHandler::flightCheck_impl()
     return components_in_error;
 }
 
+void DeploymentHandler::armComponents_impl()
+{
+    for (auto &component : *this)
+    {
+        component->arm();
+    }
+}
+
+
+

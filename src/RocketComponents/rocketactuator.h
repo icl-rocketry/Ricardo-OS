@@ -16,9 +16,11 @@ class RocketActuator: public RocketComponent{
         RocketComponent(id,componentType,logcontroller)
         {};
 
-        // virtual void arm() = 0;
+        virtual void arm() = 0;
 
         virtual void execute(int32_t param) = 0;
+
+        virtual bool flightCheck(uint32_t networkRetryInterval,std::string handler);
 
         virtual ~RocketActuator() = 0;
 

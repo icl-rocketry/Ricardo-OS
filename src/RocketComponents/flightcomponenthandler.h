@@ -33,6 +33,11 @@ class FlightComponentHandler : public NetworkedDynamicHandler<Object,Derived>{
             return static_cast<Derived*>(this)->flightCheck_impl();
         }
 
+        void armComponents(){
+            static_cast<Derived*>(this)->armComponents_impl();
+        }
+
+
         /**
          * @brief Requests a new state update from each component
          * 

@@ -24,3 +24,7 @@ void Hypnos::execute(int32_t func){
 void Hypnos::vent() {
     throw std::logic_error("Vent not implemented");
 }
+
+void Hypnos::arm(){
+
+};

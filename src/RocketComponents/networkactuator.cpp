@@ -56,5 +56,15 @@ void NetworkActuator::networkCallback(packetptr_t packetptr){
    
 };
 
+void NetworkActuator::arm(){
+    SimpleCommandPacket arm_packet(static_cast<uint8_t>(NRCPacket::NRC_COMMAND_ID::ARM),0);  // future implementation can use a magic value here effectivley authenitcating the arm command?
+    arm_packet.header.type = static_cast<uint8_t>(NRCPacket::TYPES::NRC_COMMAND);
+    arm_packet.header.source = _networkmanager.getAddress();
+    arm_packet.header.source_service = _sourceService;
+    arm_packet.header.destination = _address;
+    arm_packet.header.destination_service = _destinationService;
+
+    _networkmanager.sendPacket(arm_packet);
+}
 
 

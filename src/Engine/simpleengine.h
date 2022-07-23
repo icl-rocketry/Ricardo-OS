@@ -16,6 +16,8 @@ class SimpleEngine:public Engine{
 
         uint8_t flightCheck() override;
 
+        void armEngine() override;
+
         void update() override {}; //empty we dont need an update as this a simple on and off
 
         const EngineState* getState()override {return &_state;};

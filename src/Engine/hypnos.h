@@ -22,6 +22,8 @@ class Hypnos:public Engine{
 
         void update() override {}; 
 
+        void arm() override;
+
         const EngineState* getState()override {return &_state;};
 
         void execute(int32_t func) override;

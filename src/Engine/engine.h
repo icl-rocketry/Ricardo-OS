@@ -81,6 +81,8 @@ class Engine : public Controllable {
          * @return uint8_t number of engine components in error
          */
         virtual uint8_t flightCheck() = 0;
+
+        virtual void armEngine() = 0;
         
         virtual void update() = 0;
 

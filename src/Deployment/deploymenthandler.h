@@ -44,6 +44,7 @@ class DeploymentHandler : public FlightComponentHandler<RocketActuator,Deploymen
          * @return uint8_t returns 0 if all good, if value is greater than zero, it represents the number of components not ready or not updated
          */
         uint8_t flightCheck_impl();
+        void armComponents_impl();
          
     private:
         static constexpr uint16_t _networkRetryInterval = 5000; // 5 seconds before a new update state request is sent

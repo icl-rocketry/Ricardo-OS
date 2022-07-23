@@ -32,6 +32,11 @@ uint8_t EngineHandler::flightCheck_impl(){
     return engines_in_error;
 }
 
+void EngineHandler::armComponents_impl(){
+    for (auto& engine: *this){
+        engine->armEngine();
+    }
+}
 
 
 void EngineHandler::setupIndividual_impl(size_t id, JsonObjectConst engineconfig){

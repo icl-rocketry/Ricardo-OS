@@ -44,6 +44,8 @@ class NetworkActuator: public RocketActuator{
         _networkmanager(networkmanager)
         {};
 
+        void arm() override;
+
         /**
          * @brief Actuates the Actuator with a given param
          * 

@@ -30,6 +30,8 @@ class I2CPyro: public RocketActuator{
          */
         I2CPyro(uint8_t id,LogController& logcontroller,uint8_t address,uint8_t channel,bool continuityPolarity,TwoWire &wire);
 
+        void arm() override;
+
          /**
          * @brief Fires the Pyro
          * 
@@ -44,6 +46,7 @@ class I2CPyro: public RocketActuator{
         void updateState() override;
 
 
+
     private:
         const uint8_t _address;
         const uint8_t _channel;
@@ -52,6 +55,7 @@ class I2CPyro: public RocketActuator{
         const uint8_t _continuityPin;
         const bool _continuityPolarity;
         
+        TaskHandle_t async_off_task_handle = nullptr;
 
         TwoWire& _wire;
 
