@@ -23,13 +23,16 @@ bool RocketComponent::flightCheck(uint32_t networkRetryInterval,std::string hand
         if (requestInterval > networkRetryInterval)
         { //maybe packet got lost on the network? might indicate something more serious however
             _logcontroller.log(handler + " Component: " + std::to_string(cid) + " not responding!");
-            this->updateState(); // try requesting an update again
+            //update state of component to no response error
+            this->p_getState()->newFlag(COMPONENT_STATUS_FLAGS::ERROR_NORESPONSE);
+            // try requesting an update again
+            this->updateState(); 
         }
         return 1;
     }
-    else if (currentState->state != static_cast<uint8_t>(COMPONENT_STATE::NOMINAL))
+    else if (!this->p_getState()->flagSet(COMPONENT_STATUS_FLAGS::NOMINAL))
     {
-        _logcontroller.log(handler + " Component: " + std::to_string(cid) + " responded with error: " + std::to_string(currentState->state));
+        _logcontroller.log(handler + " Component: " + std::to_string(cid) + " responded with error: " + std::to_string(currentState->getStatus()));
         return 1;
     }
     return 0;

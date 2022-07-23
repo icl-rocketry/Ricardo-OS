@@ -27,13 +27,13 @@ void Battery::update(SensorStructs::BATT_t &data)
         const uint16_t reading = analogRead(_pin);
         data.volt = (uint16_t)(factor * (float)reading); // voltage in mV
 
-        if ((data.volt < warn_battery_voltage) && (!_systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_BATT)))
+        if ((data.volt < warn_battery_voltage) && (!_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_BATT)))
         {
-            _systemstatus.new_message(SYSTEM_FLAG::ERROR_BATT, "Battery at " + std::to_string(data.volt) + "mV");
+            _systemstatus.newFlag(SYSTEM_FLAG::ERROR_BATT, "Battery at " + std::to_string(data.volt) + "mV");
         }
-        else if ((data.volt > warn_battery_voltage) && (_systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_BATT)))
+        else if ((data.volt > warn_battery_voltage) && (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_BATT)))
         {
-            _systemstatus.delete_message(SYSTEM_FLAG::ERROR_BATT);
+            _systemstatus.deleteFlag(SYSTEM_FLAG::ERROR_BATT);
         }
 
         data.percent = uint16_t(((float)(data.volt - empty_battery_voltage) / (float)(full_battery_voltage - empty_battery_voltage)) * 100.0);

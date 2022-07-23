@@ -38,17 +38,17 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
       last_update = micros();                   // update last_update
       float dt_seconds = float(dt) * 0.000001F; // conversion to seconds
 
-      if (_systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_IMU))
+      if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_IMU))
       {
 
-         if (_systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_GPS) && _systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_BARO))
+         if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_GPS) && _systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_BARO))
          {
             // no data so we cant calculate any nav solution
             changeEstimatorState(ESTIMATOR_STATE::NOSOLUTION, "no data, cannot compute navigation solution");
             return;
          }
 
-         if (_systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_GPS))
+         if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_GPS))
          {
             // baro only update
             // TODO - add a z velocity estimate using first order filter and disrete derivative
@@ -62,7 +62,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             }
          }
 
-         if (_systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_BARO))
+         if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_BARO))
          {
             // gps only update, no fusion as filtering this data will only result in a worse solution
             if (_homeSet) // if false, this falls thru to the more important error which is no home set
@@ -80,7 +80,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
       }
       else
       { // we have imu so calculate orientation and update localizationkf
-         if (_systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_MAG))
+         if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_MAG))
          {
             updateOrientation(raw_sensors.accelgyro.gx, raw_sensors.accelgyro.gy, raw_sensors.accelgyro.gz,
                               raw_sensors.accelgyro.ax, raw_sensors.accelgyro.ay, raw_sensors.accelgyro.az,
@@ -102,7 +102,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
          updateAngularRates(raw_sensors.accelgyro.gx, raw_sensors.accelgyro.gy, raw_sensors.accelgyro.gz);
          localizationkf.accelUpdate(getLinearAcceleration(raw_sensors.accelgyro.ax, raw_sensors.accelgyro.ay, raw_sensors.accelgyro.az) * g);
          // only update with high-g accelerometer if the low g acceleromter is working
-         if (!_systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_HACCEL))
+         if (!_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_HACCEL))
          {
             localizationkf.HaccelUpdate(getLinearAcceleration(raw_sensors.accel.ax, raw_sensors.accel.ay, raw_sensors.accel.az) * g);
          }
@@ -114,9 +114,9 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
          return;
       }
 
-      if (_systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_GPS))
+      if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_GPS))
       {
-         if (_systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_BARO))
+         if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_BARO))
          {
             // no data so only orientation avalibale
             changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_GPS_NO_BARO, "no gps and baro, position and velocity estimates unreliable!");
@@ -140,7 +140,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
          }
       }
 
-      if (_systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_BARO))
+      if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_BARO))
       {
          changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_BARO, "no baro");
       }
@@ -151,7 +151,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
 
       predictLocalizationKF(dt_seconds);
 
-      if (!_systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_IMU, SYSTEM_FLAG::ERROR_GPS, SYSTEM_FLAG::ERROR_BARO, SYSTEM_FLAG::ERROR_MAG, SYSTEM_FLAG::ERROR_HACCEL))
+      if (!_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_IMU, SYSTEM_FLAG::ERROR_GPS, SYSTEM_FLAG::ERROR_BARO, SYSTEM_FLAG::ERROR_MAG, SYSTEM_FLAG::ERROR_HACCEL))
       {
          // if there are no errors with sensors then the estimator state must be nominal
          changeEstimatorState(ESTIMATOR_STATE::NOMINAL, "all data avaliable, full update");
@@ -207,7 +207,7 @@ void Estimator::updateAngularRates(const float &gx, const float &gy, const float
 
 Eigen::Vector3f Estimator::getLinearAcceleration(const float &ax, const float &ay, const float &az)
 {
-   return (madgwick.getInverseRotationMatrix() * Eigen::Vector3f{ax, ay, az}) - Eigen::Vector3f{0, 0, 1};
+   return (madgwick.getRotationMatrix() * Eigen::Vector3f{ax, ay, az}) - Eigen::Vector3f{0, 0, 1};
 };
 
 void Estimator::changeEstimatorState(ESTIMATOR_STATE status, std::string logmessage)
@@ -217,11 +217,11 @@ void Estimator::changeEstimatorState(ESTIMATOR_STATE status, std::string logmess
       state.estimator_state = static_cast<uint8_t>(status);
       if (status != ESTIMATOR_STATE::NOMINAL)
       {
-         _systemstatus.new_message(SYSTEM_FLAG::ERROR_ESTIMATOR, logmessage);
+         _systemstatus.newFlag(SYSTEM_FLAG::ERROR_ESTIMATOR, logmessage);
       }
-      else if (_systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_ESTIMATOR))
+      else if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_ESTIMATOR))
       {
-         _systemstatus.delete_message(SYSTEM_FLAG::ERROR_ESTIMATOR, logmessage);
+         _systemstatus.deleteFlag(SYSTEM_FLAG::ERROR_ESTIMATOR, logmessage);
       }
    }
 }

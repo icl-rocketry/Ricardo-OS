@@ -23,9 +23,10 @@ _continuityPolarity(continuityPolarity),
 _wire(wire)
 {
     if (!pinsValid){
-        _state.state = static_cast<uint8_t>(COMPONENT_STATE::ERROR);
+        _state.newFlag(COMPONENT_STATUS_FLAGS::ERROR_PINS);
         return;
     }
+    _state.newFlag(COMPONENT_STATUS_FLAGS::DISARMED);
     // get port configuration
     uint8_t config = get_register(CONFIG);
     //update config
@@ -65,9 +66,16 @@ _wire(wire)
 
 void I2CPyro::execute(int32_t param)
 {
-    if (!pinsValid){
+    if (!pinsValid ){
+        _logcontroller.log("Pyro: " + std::to_string(_id) + " pins invalid");
         return;
     }
+    if (_state.flagSet(COMPONENT_STATUS_FLAGS::DISARMED))
+    {
+        _logcontroller.log("Pyor" + std::to_string(_id) + " tried firing while disarmed!");
+        return;
+    }
+
     //switch on nuke pin
     uint8_t output = get_register(OUTPUT_PORT);
     _wire.beginTransmission(_address);
@@ -127,6 +135,13 @@ void I2CPyro::updateState()
         return;
     }
     _state.currentValue = get_register(INPUT_PORT) & ( 1 << _continuityPin);
+    if (_state.currentValue == 0)
+    {
+        _state.newFlag(COMPONENT_STATUS_FLAGS::ERROR_CONTINUITY);
+    }else
+    {
+        _state.deleteFlag(COMPONENT_STATUS_FLAGS::ERROR_CONTINUITY);
+    }
 };
 
 
@@ -138,12 +153,10 @@ uint8_t I2CPyro::get_register(uint8_t reg)
 
     _wire.requestFrom(_address,1);
     if (_wire.available()){
-        if (_state.state != static_cast<uint8_t>(COMPONENT_STATE::NOMINAL)){
-            _state.state = static_cast<uint8_t>(COMPONENT_STATE::NOMINAL);
-        }
+        _state.deleteFlag(COMPONENT_STATUS_FLAGS::ERROR_I2C);
         return _wire.read();
     }else{
-        _state.state = static_cast<uint8_t>(COMPONENT_STATE::ERROR);
+        _state.newFlag(COMPONENT_STATUS_FLAGS::ERROR_I2C);
         return 0;
     }
 };

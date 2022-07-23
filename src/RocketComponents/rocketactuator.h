@@ -16,6 +16,8 @@ class RocketActuator: public RocketComponent{
         RocketComponent(id,componentType,logcontroller)
         {};
 
+        // virtual void arm() = 0;
+
         virtual void execute(int32_t param) = 0;
 
         virtual ~RocketActuator() = 0;

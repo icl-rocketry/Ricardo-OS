@@ -66,7 +66,7 @@ void MMC5983MA::setup(const std::array<uint8_t,3>& axesOrder,const std::array<bo
 
     if (!alive())
     {
-        _systemstatus.new_message(SYSTEM_FLAG::ERROR_MAG, "Unable to initialize the MMC5983MA");
+        _systemstatus.newFlag(SYSTEM_FLAG::ERROR_MAG, "Unable to initialize the MMC5983MA");
         return;
     }
 

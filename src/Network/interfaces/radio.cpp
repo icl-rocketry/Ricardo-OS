@@ -35,10 +35,10 @@ void Radio::setup(){
 
 
     if (!LoRa.begin(LORA_REGION)){
-        _systemstatus.new_message(SYSTEM_FLAG::ERROR_LORA,"Lora setting up");      
+        _systemstatus.newFlag(SYSTEM_FLAG::ERROR_LORA,"Lora setting up");      
     };
-    if (_systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_LORA)){
-        _systemstatus.delete_message(SYSTEM_FLAG::ERROR_LORA);
+    if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_LORA)){
+        _systemstatus.deleteFlag(SYSTEM_FLAG::ERROR_LORA);
     }
     
     LoRa.setSyncWord(LORA_SYNC_WORD);
@@ -58,7 +58,7 @@ void Radio::sendPacket(RnpPacket& data)
         return;
     }
     if (dataSize + _currentSendBufferSize > _info.sendBufferSize){
-        _systemstatus.new_message(SYSTEM_FLAG::ERROR_LORA," LoRa Send Buffer Overflow!");
+        _systemstatus.newFlag(SYSTEM_FLAG::ERROR_LORA," LoRa Send Buffer Overflow!");
         ++_info.txerror;
         _info.sendBufferOverflow = true;
         return;

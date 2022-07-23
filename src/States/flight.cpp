@@ -21,18 +21,18 @@ State* Flight::update(){
 
     float Ad = _sm->estimator.getData().acceleration(2);
 
-    if (Ad > 0 && !_sm->systemstatus.flag_triggered(SYSTEM_FLAG::FLIGHTPHASE_BOOST)){
-        _sm->systemstatus.new_message(SYSTEM_FLAG::FLIGHTPHASE_BOOST,"Entered Boost Phase");
-        _sm->systemstatus.delete_message(SYSTEM_FLAG::FLIGHTPHASE_COAST);
-    }else if (Ad < 0 && !_sm->systemstatus.flag_triggered(SYSTEM_FLAG::FLIGHTPHASE_COAST)){
-        _sm->systemstatus.new_message(SYSTEM_FLAG::FLIGHTPHASE_COAST,"Entered Coast Phase");
-        _sm->systemstatus.delete_message(SYSTEM_FLAG::FLIGHTPHASE_BOOST);
+    if (Ad > 0 && !_sm->systemstatus.flagSetOr(SYSTEM_FLAG::FLIGHTPHASE_BOOST)){
+        _sm->systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_BOOST,"Entered Boost Phase");
+        _sm->systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_COAST);
+    }else if (Ad < 0 && !_sm->systemstatus.flagSetOr(SYSTEM_FLAG::FLIGHTPHASE_COAST)){
+        _sm->systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_COAST,"Entered Coast Phase");
+        _sm->systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_BOOST);
     }
     
     if (apogeeDetect()){
-        _sm->systemstatus.delete_message(SYSTEM_FLAG::FLIGHTPHASE_COAST);
-        _sm->systemstatus.delete_message(SYSTEM_FLAG::FLIGHTPHASE_BOOST);
-        _sm->systemstatus.new_message(SYSTEM_FLAG::FLIGHTPHASE_APOGEE,"Apogee Detected!!");
+        _sm->systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_COAST);
+        _sm->systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_BOOST);
+        _sm->systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_APOGEE,"Apogee Detected!!");
         State* recovery_ptr = new Recovery(_sm);
         return recovery_ptr;
     }else{

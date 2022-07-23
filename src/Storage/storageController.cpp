@@ -27,7 +27,7 @@ void StorageController::setup(){
         generateDirectoryStructure(STORAGE_DEVICE::MICROSD);
         _sm->logcontroller.log("SD Initalized");   
     }else{
-        _sm->systemstatus.new_message(SYSTEM_FLAG::ERROR_SD,"Error intializing SD card");
+        _sm->systemstatus.newFlag(SYSTEM_FLAG::ERROR_SD,"Error intializing SD card");
     }
     
 
@@ -41,12 +41,12 @@ void StorageController::setup(){
             _sm->logcontroller.log("Flash FS Initalized");
         
         }else{
-            _sm->systemstatus.new_message(SYSTEM_FLAG::ERROR_FLASH,"Error intializing onboard flashfs");
+            _sm->systemstatus.newFlag(SYSTEM_FLAG::ERROR_FLASH,"Error intializing onboard flashfs");
             
         }
 
     }else{
-        _sm->systemstatus.new_message(SYSTEM_FLAG::ERROR_FLASH,"Error intializing onboard flash");
+        _sm->systemstatus.newFlag(SYSTEM_FLAG::ERROR_FLASH,"Error intializing onboard flash");
         
     }
     
@@ -205,7 +205,7 @@ bool StorageController::erase(STORAGE_DEVICE device){
     switch(device){
         case(STORAGE_DEVICE::MICROSD):{
             if(!rmParent("/Logs", &microsd)){
-                _sm->systemstatus.new_message(SYSTEM_FLAG::ERROR_SD,"Error wiping SD card");
+                _sm->systemstatus.newFlag(SYSTEM_FLAG::ERROR_SD,"Error wiping SD card");
                 error = true;
                 break;
             }
@@ -215,7 +215,7 @@ bool StorageController::erase(STORAGE_DEVICE device){
         }
         case(STORAGE_DEVICE::FLASH):{
             if(!rmParent("/Logs", &flash_fatfs)){
-                _sm->systemstatus.new_message(SYSTEM_FLAG::ERROR_FLASH,"Error wiping onboard flash");
+                _sm->systemstatus.newFlag(SYSTEM_FLAG::ERROR_FLASH,"Error wiping onboard flash");
                 error = true;
                 break;
             }   
@@ -245,7 +245,7 @@ bool StorageController::format(STORAGE_DEVICE device){
     switch(device){
         case(STORAGE_DEVICE::MICROSD):{
             if(!microsd.wipe()){
-                _sm->systemstatus.new_message(SYSTEM_FLAG::ERROR_SD,"Error formatting SD card");
+                _sm->systemstatus.newFlag(SYSTEM_FLAG::ERROR_SD,"Error formatting SD card");
                 error = true;
                 break;
             }
@@ -255,7 +255,7 @@ bool StorageController::format(STORAGE_DEVICE device){
         }
         case(STORAGE_DEVICE::FLASH):{
             if(!flash_fatfs.wipe()){
-                _sm->systemstatus.new_message(SYSTEM_FLAG::ERROR_FLASH,"Error formatting onboard flash");
+                _sm->systemstatus.newFlag(SYSTEM_FLAG::ERROR_FLASH,"Error formatting onboard flash");
                 error = true;
                 break;
             }   
@@ -377,7 +377,7 @@ void StorageController::reportStatus(STORAGE_DEVICE device,DEVICE_STATE state)
     switch(state){
         case DEVICE_STATE::OK:
         {
-            _sm->systemstatus.delete_message(flag,"Device is OK!");
+            _sm->systemstatus.deleteFlag(flag,"Device is OK!");
             return;
         }
         case DEVICE_STATE::ERR_WRITE:
@@ -399,7 +399,7 @@ void StorageController::reportStatus(STORAGE_DEVICE device,DEVICE_STATE state)
             message = "Device unkown error!";
             break;
     }
-    _sm->systemstatus.new_message(flag,message);
+    _sm->systemstatus.newFlag(flag,message);
     
 }
 

@@ -52,7 +52,7 @@ stateMachine::stateMachine() :
     I2C(0),
     storagecontroller(this),
     logcontroller(&storagecontroller,networkmanager),
-    systemstatus(&logcontroller),
+    systemstatus(logcontroller),
     usbserial(Serial,systemstatus,logcontroller),
     radio(hspi,systemstatus,logcontroller),
     canbus(systemstatus,logcontroller,3),
@@ -157,7 +157,7 @@ void stateMachine::initialise(State* initStatePtr) {
 
 
   // //sensors must be setup before estim ator
-  sensors.setup(configcontroller.get());
+  sensors.setup(configcontroller.get()["Sensors"]);
   estimator.setup();
   //call setup state
   changeState(initStatePtr);

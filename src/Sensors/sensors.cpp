@@ -71,7 +71,7 @@ void Sensors::setup(JsonObjectConst config){
 void Sensors::update()
 {
     if (_hitlEnabled){
-        if (!_systemstatus.flag_triggered(SYSTEM_FLAG::DEBUG))
+        if (!_systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG))
         {
         _hitlEnabled = false;
         }
@@ -115,7 +115,7 @@ std::function<void(std::unique_ptr<RnpPacketSerialized>)> Sensors::getHitlCallba
 void Sensors::hitlHandler(std::unique_ptr<RnpPacketSerialized> packet_ptr)
 {
     //final check that this has only be called in debug mode
-    if (!_systemstatus.flag_triggered(SYSTEM_FLAG::DEBUG)){
+    if (!_systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
         return;
     }
     //process hitl packet
@@ -205,13 +205,13 @@ void Sensors::hitlCommandHandler(RnpPacketSerialized& packet)
 
 void Sensors::hitlUpdateSensorError(uint8_t sensor_state,SYSTEM_FLAG flag)
 {
-    if (sensor_state && !_systemstatus.flag_triggered(flag))
+    if (sensor_state && !_systemstatus.flagSetOr(flag))
     {
-        _systemstatus.new_message(flag, "hitl raised error");
+        _systemstatus.newFlag(flag, "hitl raised error");
     }
-    else if (!sensor_state && _systemstatus.flag_triggered(flag))
+    else if (!sensor_state && _systemstatus.flagSetOr(flag))
     {
-        _systemstatus.delete_message(flag, "hitl removed flag");
+        _systemstatus.deleteFlag(flag, "hitl removed flag");
     }
 }
 

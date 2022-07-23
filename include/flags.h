@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <type_traits>
 
 enum class SYSTEM_FLAG:uint32_t{
     //state flags
@@ -43,4 +44,5 @@ enum class SYSTEM_FLAG:uint32_t{
     
 };
 
+using system_flag_t = uint32_t;
 

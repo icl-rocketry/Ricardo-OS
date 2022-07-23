@@ -43,13 +43,6 @@ class I2CPyro: public RocketActuator{
          */
         void updateState() override;
 
-        /**
-         * @brief Returns the last received state from the actuator
-         * 
-         * @return const ComponentState* 
-         */
-        const RocketComponentState* getState() override {return &_state;};
-
 
     private:
         const uint8_t _address;
@@ -92,6 +85,13 @@ class I2CPyro: public RocketActuator{
          * @return uint8_t 
          */
         uint8_t get_register(uint8_t reg);
+
+        /**
+         * @brief Returns the pointer to the last received state from the actuator
+         * 
+         * @return ComponentState* 
+         */
+         RocketComponentState* p_getState() override {return &_state;};
 
         
 

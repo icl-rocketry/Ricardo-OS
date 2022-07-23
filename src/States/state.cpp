@@ -15,7 +15,7 @@ State::~State(){
 
 void State::initialise(){
     time_entered_state = millis();
-    _sm->systemstatus.new_message(_curr_stateID,"state entered");
+    _sm->systemstatus.newFlag(_curr_stateID,"state entered");
 };
 
 
@@ -23,7 +23,7 @@ void State::initialise(){
 void State::exitstate(){
     time_exited_state = millis();
     time_duration_state = time_exited_state - time_entered_state;
-     _sm->systemstatus.delete_message(_curr_stateID,"state exited | state duration: " + std::to_string(time_duration_state));
+     _sm->systemstatus.deleteFlag(_curr_stateID,"state exited | state duration: " + std::to_string(time_duration_state));
 
 };
 

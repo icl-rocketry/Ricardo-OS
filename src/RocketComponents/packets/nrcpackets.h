@@ -12,7 +12,18 @@ namespace NRCPacket{
         NRC_COMMAND = 0,
         NRC_STATE = 1
     };
+
+    enum class NRC_COMMAND_ID:uint8_t{
+        NOCOMMAND=0,
+        GETSTATE=1,
+        EXECUTE=2,
+        ARM=3,
+        DISARM=4
+    };
+
 };
+
+
 
 class NRCStatePacket : public RnpPacket{
     private:

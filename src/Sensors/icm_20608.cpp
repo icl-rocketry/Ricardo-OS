@@ -27,7 +27,7 @@ void ICM_20608::setup(const std::array<uint8_t,3>& axesOrder, const std::array<b
     delay(5);
     //check we are alive
     if (!alive()){
-         _systemstatus.new_message(SYSTEM_FLAG::ERROR_IMU, "Unable to initialize the icm 20608");
+         _systemstatus.newFlag(SYSTEM_FLAG::ERROR_IMU, "Unable to initialize the icm 20608");
         return;
     }
     //set gyro and accel ranges -> update this later to process ranges provided
@@ -38,7 +38,7 @@ void ICM_20608::setup(const std::array<uint8_t,3>& axesOrder, const std::array<b
     
     //check we are alive
     if (!alive()){
-         _systemstatus.new_message(SYSTEM_FLAG::ERROR_IMU, "Unable to initialize the icm 20608");
+         _systemstatus.newFlag(SYSTEM_FLAG::ERROR_IMU, "Unable to initialize the icm 20608");
         return;
     }
 
@@ -183,7 +183,7 @@ void ICM_20608::readAccel(float &x, float &y, float &z)
     int16_t xi, yi, zi;
     readAccelRaw(xi, yi, zi);
     std::array<float, 3> accel = axeshelper(std::array<float, 3>{(float)(yi + offset_ay) * accel_lsb_to_g,
-                                                                  (float)(xi + offset_ay) * accel_lsb_to_g,
+                                                                  (float)(xi + offset_ax) * accel_lsb_to_g,
                                                                   -(float)(zi + offset_az) * accel_lsb_to_g});
 
     x = accel[0];

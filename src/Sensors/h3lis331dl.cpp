@@ -20,7 +20,7 @@ void H3LIS331DL::setup(const std::array<uint8_t,3>& axesOrder, const std::array<
     setFullScale(fs_range::FS_100G); // needs to be changed to be configured from json
 
      if (!alive()){
-         _systemstatus.new_message(SYSTEM_FLAG::ERROR_HACCEL, "Unable to initialize the H3LIS331DL");
+         _systemstatus.newFlag(SYSTEM_FLAG::ERROR_HACCEL, "Unable to initialize the H3LIS331DL");
         return;
     }
 

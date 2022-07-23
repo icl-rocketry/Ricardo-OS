@@ -107,8 +107,8 @@ class CanBus: public RnpInterface{
                                                                     .rx_io = (gpio_num_t) RxCan,
                                                                     .clkout_io = CAN_IO_UNUSED,
                                                                     .bus_off_io = CAN_IO_UNUSED,
-                                                                    .tx_queue_len = 5,
-                                                                    .rx_queue_len = 5,
+                                                                    .tx_queue_len = 20,
+                                                                    .rx_queue_len = 20,
                                                                     .alerts_enabled = CAN_ALERT_NONE,
                                                                     .clkout_divider = 0,
                                                                     };

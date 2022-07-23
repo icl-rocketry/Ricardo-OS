@@ -60,6 +60,8 @@ public:
     Eigen::Vector3f getEulerAngles();
     Eigen::Matrix3f getRotationMatrix();
     Eigen::Matrix3f getInverseRotationMatrix();
+
+    inline static const Eigen::Quaternionf nwu2ned{sqrt(2)/2,0,sqrt(2)/2,0};
     
 
 /*

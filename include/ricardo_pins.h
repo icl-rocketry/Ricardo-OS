@@ -26,8 +26,17 @@ static constexpr int V_MOSI = 23;
 static constexpr int SdCs_1 = 25;
 static constexpr int SdCs_2 = 26;
 static constexpr int Buzzer = 27;
+
+
 static constexpr int TxCan = 32;
 static constexpr int RxCan = 33;
+
+// static constexpr int TxCan = 27;
+// static constexpr int RxCan = 14;
+
+
+// static constexpr int TxCan = 33;
+// static constexpr int RxCan = 32;
 static constexpr int SdDet_1 = 34;
 static constexpr int SdDet_2 = 35;
 static constexpr int BattVolt = 36;

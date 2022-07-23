@@ -48,7 +48,7 @@ void USB::sendPacket(RnpPacket& data)
     }
     if (dataSize + _sendBuffer.size() > _info.sendBufferSize){
         // not enough space
-        _systemstatus.new_message(SYSTEM_FLAG::ERROR_SERIAL,"USB Send Buffer Overflow!");
+        _systemstatus.newFlag(SYSTEM_FLAG::ERROR_SERIAL,"USB Send Buffer Overflow!");
         ++_info.txerror;
         return;
     }
@@ -119,7 +119,7 @@ void USB::getPackets(){
                     //buffer overflow, dump buffer
                     _receiveBuffer.clear();
                     _info.receiveBufferOverflow = true;
-                    _systemstatus.new_message(SYSTEM_FLAG::ERROR_SERIAL,"USB Receive Buffer Overflow!");
+                    _systemstatus.newFlag(SYSTEM_FLAG::ERROR_SERIAL,"USB Receive Buffer Overflow!");
                 }
             }
         }

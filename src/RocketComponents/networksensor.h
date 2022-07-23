@@ -25,13 +25,6 @@ class NetworkSensor:public RocketSensor{
         void updateState() override;
 
         /**
-         * @brief Returns the last received state from the actuator
-         * 
-         * @return const ComponentState* 
-         */
-        const RocketComponentState* getState() override {return &_state;};
-
-        /**
          * @brief Network callback function used to process packets recevied by the network manager. This will usually be managed by
          *        a managing object.
          * 
@@ -48,5 +41,12 @@ class NetworkSensor:public RocketSensor{
 
         RnpNetworkManager& _networkmanager;
         NetworkSensorState _state;
+
+         /**
+         * @brief Returns a pointer to the state of the component
+         * 
+         * @return ComponentState* 
+         */
+        RocketComponentState* p_getState() override {return &_state;};
     
 };

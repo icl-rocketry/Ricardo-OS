@@ -156,7 +156,7 @@ std::function<void(std::unique_ptr<RnpPacketSerialized>)> CommandHandler::getCal
 
 void CommandHandler::LaunchCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_PREFLIGHT)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT)){
 		return;
 	}
 	_sm->changeState(new Launch(_sm));
@@ -164,7 +164,7 @@ void CommandHandler::LaunchCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::ResetCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_RECOVERY,SYSTEM_FLAG::STATE_GROUNDSTATION)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_RECOVERY,SYSTEM_FLAG::STATE_GROUNDSTATION)){
 		return;
 	}
 	_sm->changeState(new Preflight(_sm));
@@ -172,14 +172,14 @@ void CommandHandler::ResetCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::AbortCommand(const  RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_LAUNCH,SYSTEM_FLAG::STATE_FLIGHT)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_LAUNCH,SYSTEM_FLAG::STATE_FLIGHT)){
 		return;
 	}
-	if(_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_LAUNCH)){
+	if(_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_LAUNCH)){
 		//check if we are in no abort time region
 		//close all valves
 		_sm->changeState(new Preflight(_sm));
-	}else if (_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_FLIGHT)){
+	}else if (_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_FLIGHT)){
 		//this behaviour needs to be confirmed with recovery 
 		//might be worth waiting for acceleration to be 0 after rocket engine cut
 		_sm->changeState(new Recovery(_sm));
@@ -188,7 +188,7 @@ void CommandHandler::AbortCommand(const  RnpPacketSerialized& packet)
 
 void CommandHandler::SetHomeCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	_sm->estimator.setHome(_sm->sensors.getData());
@@ -204,7 +204,7 @@ void CommandHandler::StartLoggingCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::StopLoggingCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	SimpleCommandPacket commandpacket(packet);
@@ -296,7 +296,7 @@ void CommandHandler::TelemetryCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::ClearFlashCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::STATE_GROUNDSTATION,SYSTEM_FLAG::DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::STATE_GROUNDSTATION,SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	_sm->storagecontroller.erase(STORAGE_DEVICE::FLASH);
@@ -306,7 +306,7 @@ void CommandHandler::ClearFlashCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::ClearSDCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::STATE_GROUNDSTATION,SYSTEM_FLAG::DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::STATE_GROUNDSTATION,SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	_sm->storagecontroller.erase(STORAGE_DEVICE::MICROSD);
@@ -315,7 +315,7 @@ void CommandHandler::ClearSDCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::PlaySongCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_PREFLIGHT)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT)){
 		return;
 	}
 	SimpleCommandPacket commandpacket(packet);
@@ -324,7 +324,7 @@ void CommandHandler::PlaySongCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::SkipSongCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_PREFLIGHT)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT)){
 		return;
 	}
 	_sm->tunezhandler.skip();
@@ -332,7 +332,7 @@ void CommandHandler::SkipSongCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::ClearSongQueueCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_PREFLIGHT)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT)){
 		return;
 	}
 	_sm->tunezhandler.clear();
@@ -340,7 +340,7 @@ void CommandHandler::ClearSongQueueCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::ResetOrientationCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	_sm->estimator.resetOrientation();
@@ -349,7 +349,7 @@ void CommandHandler::ResetOrientationCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::ResetLocalizationCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	_sm->estimator.setup();
@@ -358,7 +358,7 @@ void CommandHandler::ResetLocalizationCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::SetBetaCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	SimpleCommandPacket commandpacket(packet);
@@ -368,7 +368,7 @@ void CommandHandler::SetBetaCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::CalibrateAccelGyroBiasCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	_sm->sensors.calibrateAccelGyro();
@@ -377,7 +377,7 @@ void CommandHandler::CalibrateAccelGyroBiasCommand(const RnpPacketSerialized& pa
 
 void CommandHandler::CalibrateMagFullCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	//check packet type received
@@ -397,7 +397,7 @@ void CommandHandler::CalibrateMagFullCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::CalibrateBaroCommand(const RnpPacketSerialized& packet)
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	_sm->sensors.calibrateBaro();
@@ -406,16 +406,16 @@ void CommandHandler::CalibrateBaroCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::EnterDebugCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_PREFLIGHT)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT)){
 		return;
 	}
 	_sm->changeState(new Debug(_sm));
-	_sm->systemstatus.new_message(SYSTEM_FLAG::DEBUG);
+	_sm->systemstatus.newFlag(SYSTEM_FLAG::DEBUG);
 }
 
 void CommandHandler::EnterPreflightCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	_sm->changeState(new Preflight(_sm));
@@ -423,7 +423,7 @@ void CommandHandler::EnterPreflightCommand(const RnpPacketSerialized& packet)
 
 // void CommandHandler::EnterGroundstationCommand(const RnpPacketSerialized& packet) 
 // {
-// 	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
+// 	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
 // 		return;
 // 	}
 // 	_sm->changeState(new Groundstation(_sm));
@@ -431,7 +431,7 @@ void CommandHandler::EnterPreflightCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::EnterCountdownCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	_sm->changeState(new Launch(_sm));
@@ -439,7 +439,7 @@ void CommandHandler::EnterCountdownCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::EnterFlightCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	_sm->changeState(new Flight(_sm));
@@ -447,7 +447,7 @@ void CommandHandler::EnterFlightCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::EnterRecoveryCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	_sm->changeState(new Recovery(_sm));
@@ -455,17 +455,17 @@ void CommandHandler::EnterRecoveryCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::ExitDebugCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	_sm->changeState(new Debug(_sm));
-	_sm->systemstatus.delete_message(SYSTEM_FLAG::DEBUG);
+	_sm->systemstatus.deleteFlag(SYSTEM_FLAG::DEBUG);
 	_sm->changeState(new Preflight(_sm));
 }
 
 void CommandHandler::ExitToDebugCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	_sm->changeState(new Debug(_sm));
@@ -478,7 +478,7 @@ void CommandHandler::EngineInfoCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::SetThrottleCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_DEBUG)){
 		return;
 	}
 }
@@ -490,7 +490,7 @@ void CommandHandler::PyroInfoCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::FireInfoCommand(const RnpPacketSerialized& packet) 
 {
-	if(!_sm->systemstatus.flag_triggered(SYSTEM_FLAG::STATE_DEBUG)){
+	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_DEBUG)){
 		return;
 	}
 };

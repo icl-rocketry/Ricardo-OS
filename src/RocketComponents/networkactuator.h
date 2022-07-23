@@ -55,12 +55,7 @@ class NetworkActuator: public RocketActuator{
 
         void updateState() override;
 
-        /**
-         * @brief Returns the last received state from the actuator
-         * 
-         * @return const ComponentState* 
-         */
-        const RocketComponentState* getState() override {return &_state;};
+        
 
         /**
          * @brief Network callback function used to process packets recevied by the network manager. This will usually be managed by
@@ -80,5 +75,13 @@ class NetworkActuator: public RocketActuator{
         RnpNetworkManager& _networkmanager;
 
         NetworkActuatorState _state;
+
+
+        /**
+         * @brief Returns a pointer to the state of the component
+         * 
+         * @return ComponentState* 
+         */
+        RocketComponentState* p_getState() override {return &_state;};
     
 };

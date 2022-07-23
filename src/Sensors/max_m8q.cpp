@@ -26,7 +26,7 @@ Max_M8Q::Max_M8Q(TwoWire& wire, SystemStatus& systemstatus, LogController& logco
 void Max_M8Q::setup()
 {
     if(!gnss.begin(_wire)){
-        _systemstatus.new_message(SYSTEM_FLAG::ERROR_GPS,"GPS I2C not found at address");
+        _systemstatus.newFlag(SYSTEM_FLAG::ERROR_GPS,"GPS I2C not found at address");
         _i2cerror = true;
     }else{
         _logcontroller.log("Max_M8Q Initialized");   
@@ -73,12 +73,12 @@ void Max_M8Q::update(SensorStructs::GPS_t& gpsdata)
        gpsdata.second = gnss.getSecond();
 
        if (gpsdata.fix < 3){
-           if (!_systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_GPS)){
-               _systemstatus.new_message(SYSTEM_FLAG::ERROR_GPS,"GPS bad fix");
+           if (!_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_GPS)){
+               _systemstatus.newFlag(SYSTEM_FLAG::ERROR_GPS,"GPS bad fix");
            }
        }else{
-           if(_systemstatus.flag_triggered(SYSTEM_FLAG::ERROR_GPS)){
-               _systemstatus.delete_message(SYSTEM_FLAG::ERROR_GPS);
+           if(_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_GPS)){
+               _systemstatus.deleteFlag(SYSTEM_FLAG::ERROR_GPS);
            }
        }
 

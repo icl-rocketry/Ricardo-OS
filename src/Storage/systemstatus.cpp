@@ -6,41 +6,37 @@
 #include <string>
 
 
-SystemStatus::SystemStatus(LogController* logcontroller):
-_logcontroller(logcontroller),
-_status(0)
+SystemStatus::SystemStatus(LogController& logcontroller):
+BitwiseFlagManager::BitwiseFlagManager(0),
+_logcontroller(logcontroller)
 {};
 
-void SystemStatus::new_message(SYSTEM_FLAG flag,std::string info){
-
-    _status |= static_cast<uint32_t>(flag);
+void SystemStatus::newFlag(SYSTEM_FLAG flag,std::string info){
+    BitwiseFlagManager::newFlag(flag);
     //_sm->logcontroller.log(_status,static_cast<uint32_t>(flag),info);
-    _logcontroller->log(_status,static_cast<uint32_t>(flag),info);
+    _logcontroller.log(static_cast<uint32_t>(getStatus()),static_cast<uint32_t>(flag),info);
 
 };
 
-uint32_t SystemStatus::getStatus(){
-    return _status;
-}
 
-void SystemStatus::new_message(SYSTEM_FLAG flag){
-    _status |= static_cast<uint32_t>(flag);
+void SystemStatus::newFlag(SYSTEM_FLAG flag){
+     BitwiseFlagManager::newFlag(flag);
     //_sm->logcontroller.log(_status,static_cast<uint32_t>(flag),"flag raised");
-    _logcontroller->log(_status,static_cast<uint32_t>(flag),"flag raised");
+    _logcontroller.log(static_cast<uint32_t>(getStatus()),static_cast<uint32_t>(flag),"flag raised");
 };
 
 
-void SystemStatus::delete_message(SYSTEM_FLAG flag){
-    _status &= ~static_cast<uint32_t>(flag);
+void SystemStatus::deleteFlag(SYSTEM_FLAG flag){
+    BitwiseFlagManager::deleteFlag(flag);
    // _sm->logcontroller.log(_status,static_cast<uint32_t>(flag),"flag removed");
-    _logcontroller->log(_status,static_cast<uint32_t>(flag),"flag removed");
+    _logcontroller.log(static_cast<uint32_t>(getStatus()),static_cast<uint32_t>(flag),"flag removed");
 };
 
-void SystemStatus::delete_message(SYSTEM_FLAG flag,std::string info){
+void SystemStatus::deleteFlag(SYSTEM_FLAG flag,std::string info){
 
-    _status &= ~static_cast<uint32_t>(flag);
+    BitwiseFlagManager::deleteFlag(flag);
    //_sm->logcontroller.log(_status,static_cast<uint32_t>(flag),info);
-    _logcontroller->log(_status,static_cast<uint32_t>(flag),info);
+    _logcontroller.log(static_cast<uint32_t>(getStatus()),static_cast<uint32_t>(flag),info);
 };
 
 

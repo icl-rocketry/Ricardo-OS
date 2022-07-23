@@ -12,26 +12,26 @@
 void NetworkActuator::execute(int32_t param){
     
 
-    SimpleCommandPacket get_new_state(3,static_cast<uint32_t>(param)); //command id = 3 for actuate
-    get_new_state.header.type = static_cast<uint8_t>(NRCPacket::TYPES::NRC_COMMAND);
-    get_new_state.header.source = _networkmanager.getAddress();
-    get_new_state.header.source_service = _sourceService;
-    get_new_state.header.destination = _address;
-    get_new_state.header.destination_service = _destinationService;
+    SimpleCommandPacket execute_packet(static_cast<uint8_t>(NRCPacket::NRC_COMMAND_ID::EXECUTE),static_cast<uint32_t>(param)); 
+    execute_packet.header.type = static_cast<uint8_t>(NRCPacket::TYPES::NRC_COMMAND);
+    execute_packet.header.source = _networkmanager.getAddress();
+    execute_packet.header.source_service = _sourceService;
+    execute_packet.header.destination = _address;
+    execute_packet.header.destination_service = _destinationService;
 
-    _networkmanager.sendPacket(get_new_state);
+    _networkmanager.sendPacket(execute_packet);
 
 };
 
 void NetworkActuator::updateState(){
-    SimpleCommandPacket get_new_state(2,0); //command id = 2 for get state - no payload required
-    get_new_state.header.type = static_cast<uint8_t>(NRCPacket::TYPES::NRC_COMMAND);
-    get_new_state.header.source = _networkmanager.getAddress();
-    get_new_state.header.source_service = _sourceService;
-    get_new_state.header.destination = _address;
-    get_new_state.header.destination_service = _destinationService;
+    SimpleCommandPacket getstate_packet(static_cast<uint8_t>(NRCPacket::NRC_COMMAND_ID::GETSTATE),0); 
+    getstate_packet.header.type = static_cast<uint8_t>(NRCPacket::TYPES::NRC_COMMAND);
+    getstate_packet.header.source = _networkmanager.getAddress();
+    getstate_packet.header.source_service = _sourceService;
+    getstate_packet.header.destination = _address;
+    getstate_packet.header.destination_service = _destinationService;
 
-    _networkmanager.sendPacket(get_new_state);
+    _networkmanager.sendPacket(getstate_packet);
     _state.lastNewStateRequestTime = millis();
 };
 
@@ -48,7 +48,7 @@ void NetworkActuator::networkCallback(packetptr_t packetptr){
             NRCStatePacket nrcstatepacket(*packetptr); //deserialize state packet
             _state.lastNewStateUpdateTime = millis();
             _state.currentValue = nrcstatepacket.value;
-            _state.state = nrcstatepacket.state;
+            _state.trackRemoteStatus(nrcstatepacket.state);
         }
     
     }
