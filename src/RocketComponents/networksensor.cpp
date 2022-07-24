@@ -1,6 +1,6 @@
 #include "networksensor.h"
 #include "packets/nrcpackets.h"
-#include "Commands/commandpacket.h"
+#include <default_packets/simplecommandpacket.h>
 #include <Arduino.h>
 
 #include "Storage/logController.h"

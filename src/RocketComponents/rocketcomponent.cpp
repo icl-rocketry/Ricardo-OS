@@ -5,7 +5,7 @@
 RocketComponent::~RocketComponent(){};
 
 //Returns true if there is an error !!
-bool RocketComponent::flightCheck(uint32_t networkRetryInterval,std::string handler){
+bool RocketComponent::flightCheck(uint32_t networkRetryInterval,uint32_t stateExpiry,std::string handler){
     const RocketComponentState* currentState = this->getState();
     if (currentState == nullptr){
         #ifdef _RICDEBUG
@@ -17,10 +17,9 @@ bool RocketComponent::flightCheck(uint32_t networkRetryInterval,std::string hand
 
     const uint8_t cid = this->getID();
 
-    if (currentState->lastNewStateRequestTime > currentState->lastNewStateUpdateTime) //component hasnt sent new update
+    if (currentState->lastNewStateRequestTime >= currentState->lastNewStateUpdateTime) //component hasnt sent new update
     {
-        uint32_t requestInterval = millis() - currentState->lastNewStateRequestTime;
-        if (requestInterval > networkRetryInterval)
+        if (millis() - currentState->lastNewStateRequestTime > networkRetryInterval)
         { //maybe packet got lost on the network? might indicate something more serious however
             _logcontroller.log(handler + " Component: " + std::to_string(cid) + " not responding!");
             //update state of component to no response error
@@ -29,11 +28,22 @@ bool RocketComponent::flightCheck(uint32_t networkRetryInterval,std::string hand
             this->updateState(); 
         }
         return 1;
-    }
-    else if (!this->p_getState()->flagSet(COMPONENT_STATUS_FLAGS::NOMINAL))
+    }else if (millis()-currentState->lastNewStateRequestTime>stateExpiry)
     {
-        _logcontroller.log(handler + " Component: " + std::to_string(cid) + " responded with error: " + std::to_string(currentState->getStatus()));
+        //current state has expired, request new state update
+        this->updateState();
+    }
+    
+    if (!this->p_getState()->flagSet(COMPONENT_STATUS_FLAGS::NOMINAL))
+    {
+        //check if the component state has changedf
+        if (currentState->getStatus() != currentState->previousStatus)
+        {
+            //log the changes
+            _logcontroller.log(handler + " Component: " + std::to_string(cid) + " error: " + std::to_string(currentState->getStatus()));
+        }
         return 1;
     }
+
     return 0;
 }

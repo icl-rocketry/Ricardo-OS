@@ -29,18 +29,17 @@ enum class SYSTEM_FLAG:uint32_t{
     ERROR_SD = (1 << 19),
     ERROR_FLASH = (1 << 20),
     ERROR_CAN = (1 << 21),
+    ERROR_FLIGHTCHECK = (1<<22),
     //if rocket is inverted
-    ERROR_ORIENTATION = (1 << 22),
+    ERROR_ORIENTATION = (1 << 23),
     //warn
-    WARN_BATT = (1 << 23),
-    WARN_PYRO = (1 << 24),
-    WARN_PYRO2 = (1 << 25),
+    WARN_BATT = (1 << 24),
     //FLIGHTPHASES 
-    FLIGHTPHASE_BOOST = (1 << 26),
-    FLIGHTPHASE_COAST = (1 << 27),
-    FLIGHTPHASE_APOGEE = (1 << 28),
-    FLIGHTPHASE_DROUGE_CHUTE = (1 << 29),
-    FLIGHTPHASE_MAIN_CHUTE = (1 << 30)
+    FLIGHTPHASE_BOOST = (1 << 25),
+    FLIGHTPHASE_COAST = (1 << 26),
+    FLIGHTPHASE_APOGEE = (1 << 27),
+    FLIGHTPHASE_DROUGE_CHUTE = (1 << 28),
+    FLIGHTPHASE_MAIN_CHUTE = (1 << 29)
     
 };
 

@@ -13,7 +13,7 @@
 #include "Storage/logController.h"
 #include "Storage/systemstatus.h"
 
-#include "Commands/commandpacket.h"
+#include <default_packets/simplecommandpacket.h>
 
 #include "Helpers/jsonconfighelper.h"
 

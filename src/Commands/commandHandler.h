@@ -11,7 +11,8 @@
 #include "commands.h"
 #include "rnp_packet.h"
 #include "rnp_networkmanager.h"
-#include "commandpacket.h"
+#include <default_packets/simplecommandpacket.h>
+
 
 
 class stateMachine;//forward declaration 
@@ -22,8 +23,15 @@ class CommandHandler {
         CommandHandler(stateMachine* sm);
         
         std::function<void(std::unique_ptr<RnpPacketSerialized>)> getCallback();
-
+ 
         static constexpr uint8_t serviceID = static_cast<uint8_t>(DEFAULT_SERVICES::COMMAND); // serivce ID for network manager
+        
+        enum class PACKET_TYPES:uint8_t{
+            SIMPLE = 0,
+            MAGCAL = 10,
+            MESSAGE_RESPONSE = 100,
+            TELEMETRY_RESPONSE = 101
+        };
 
     private:
         stateMachine* _sm; //pointer to state machine
@@ -48,6 +56,7 @@ class CommandHandler {
         void CalibrateAccelGyroBiasCommand(const RnpPacketSerialized& packet);
         void CalibrateMagFullCommand(const RnpPacketSerialized& packet);
         void CalibrateBaroCommand(const RnpPacketSerialized& packet);
+        void IgnitionCommand(const RnpPacketSerialized& packet);
         void EnterDebugCommand(const RnpPacketSerialized& packet);
         void EnterPreflightCommand(const RnpPacketSerialized& packet);
         // void EnterGroundstationCommand(const RnpPacketSerialized& packet);

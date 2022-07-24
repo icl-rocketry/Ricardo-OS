@@ -25,6 +25,6 @@ void Hypnos::vent() {
     throw std::logic_error("Vent not implemented");
 }
 
-void Hypnos::arm(){
+void Hypnos::armEngine(){
 
 };

@@ -112,7 +112,7 @@ namespace SensorStructs
 
         //times -> all must be initialized to zero
         uint32_t ignitionTime{0};
-        uint32_t launchTime{0};
+        uint32_t liftoffTime{0};
         uint32_t apogeeTime{0};
 
         /**

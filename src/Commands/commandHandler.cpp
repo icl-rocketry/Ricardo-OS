@@ -26,9 +26,9 @@
 #include "rnp_packet.h"
 #include "rnp_interface.h"
 #include "Network/interfaces/radio.h"
-#include "commandpacket.h"
+#include "packets/magcalcommandpacket.h"
 
-#include "TelemetryPacket.h"
+#include "packets/TelemetryPacket.h"
 
 #include "Sensors/mmc5983ma.h"
 #include "Sensors/sensorStructs.h"
@@ -90,6 +90,9 @@ void CommandHandler::handleCommand(std::unique_ptr<RnpPacketSerialized> packetpt
 			break;
 		case COMMANDS::Calibrate_Baro:
 			CalibrateBaroCommand(*packetptr);
+			break;
+		case COMMANDS::Ignition:
+			IgnitionCommand(*packetptr);
 			break;
 		case COMMANDS::Set_Beta:
 			SetBetaCommand(*packetptr);
@@ -167,7 +170,13 @@ void CommandHandler::ResetCommand(const RnpPacketSerialized& packet)
 	if(!_sm->systemstatus.flagSetOr(SYSTEM_FLAG::STATE_RECOVERY,SYSTEM_FLAG::STATE_GROUNDSTATION)){
 		return;
 	}
-	_sm->changeState(new Preflight(_sm));
+	
+	_sm->estimator.setApogeeTime(0);
+	_sm->estimator.setIgnitionTime(0);
+	_sm->estimator.setLiftoffTime(0);
+	// _sm->initialise(new Preflight(_sm)); // reboot the whole system
+	ESP.restart(); 
+
 }
 
 void CommandHandler::AbortCommand(const  RnpPacketSerialized& packet) 
@@ -220,7 +229,7 @@ void CommandHandler::TelemetryCommand(const RnpPacketSerialized& packet)
 	auto raw_sensors = _sm->sensors.getData();
 	auto estimator_state = _sm->estimator.getData();
 
-	telemetry.header.type = static_cast<uint8_t>(CommandPacket::TYPES::TELEMETRY_RESPONSE);
+	telemetry.header.type = static_cast<uint8_t>(CommandHandler::PACKET_TYPES::TELEMETRY_RESPONSE);
 	telemetry.header.source = _sm->networkmanager.getAddress();
 	telemetry.header.source_service = serviceID;
 	telemetry.header.destination = commandpacket.header.source;
@@ -381,7 +390,7 @@ void CommandHandler::CalibrateMagFullCommand(const RnpPacketSerialized& packet)
 		return;
 	}
 	//check packet type received
-	if (packet.header.type != static_cast<uint8_t>(CommandPacket::TYPES::MAGCAL)){
+	if (packet.header.type != static_cast<uint8_t>(CommandHandler::PACKET_TYPES::MAGCAL)){
 		//incorrect packet type received do not deserialize
 		return;
 	}
@@ -402,6 +411,16 @@ void CommandHandler::CalibrateBaroCommand(const RnpPacketSerialized& packet)
 	}
 	_sm->sensors.calibrateBaro();
 	_sm->tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
+}
+
+void CommandHandler::IgnitionCommand(const RnpPacketSerialized& packet)
+{
+	if(_sm->systemstatus.flagSet(SYSTEM_FLAG::STATE_LAUNCH) && !_sm->systemstatus.flagSet(SYSTEM_FLAG::ERROR_FLIGHTCHECK))
+	{
+		uint32_t currentTime = millis();
+		_sm->estimator.setIgnitionTime(currentTime); // set igintion time
+		
+	}
 }
 
 void CommandHandler::EnterDebugCommand(const RnpPacketSerialized& packet) 
@@ -500,7 +519,7 @@ void CommandHandler::FreeRamCommand(const RnpPacketSerialized& packet)
 	//avliable in all states
 	//returning as simple string packet for ease
 	//currently only returning free ram
-	MessagePacket_Base<0,static_cast<uint8_t>(CommandPacket::TYPES::MESSAGE_RESPONSE)> message("FreeRam: " + std::to_string(esp_get_free_heap_size()));
+	MessagePacket_Base<0,static_cast<uint8_t>(CommandHandler::PACKET_TYPES::MESSAGE_RESPONSE)> message("FreeRam: " + std::to_string(esp_get_free_heap_size()));
 	message.header.source_service = serviceID;
 	message.header.destination_service = packet.header.source_service;
 	message.header.source = packet.header.destination;

@@ -84,6 +84,9 @@ private:
             &telemetry_logframe::ax,
             &telemetry_logframe::ay,
             &telemetry_logframe::az,
+            &telemetry_logframe::h_ax,
+            &telemetry_logframe::h_ay,
+            &telemetry_logframe::h_az,
             &telemetry_logframe::gx,
             &telemetry_logframe::gy,
             &telemetry_logframe::gz,
@@ -99,6 +102,10 @@ private:
             &telemetry_logframe::roll,
             &telemetry_logframe::pitch,
             &telemetry_logframe::yaw,
+            &telemetry_logframe::q0,
+            &telemetry_logframe::q1,
+            &telemetry_logframe::q2,
+            &telemetry_logframe::q3,
             &telemetry_logframe::pn,
             &telemetry_logframe::pe,
             &telemetry_logframe::pd,
@@ -108,6 +115,8 @@ private:
             &telemetry_logframe::an,
             &telemetry_logframe::ae,
             &telemetry_logframe::ad,
+            &telemetry_logframe::rssi,
+            &telemetry_logframe::snr,
             &telemetry_logframe::timestamp
             
            
@@ -124,6 +133,7 @@ public:
     uint16_t gps_sat, gps_fix; // these cant be uint8_t as this is a typedef to unsigned char so cannot be converted to a numeric string
     //imu
     float ax, ay, az;
+    float h_ax, h_ay, h_az;
     float gx, gy, gz;
     float mx, my, mz;
     float imu_temp;
@@ -133,12 +143,17 @@ public:
     uint16_t batt_volt,batt_percent;
     //orientation
     float roll, pitch, yaw;
+    float q0,q1,q2,q3;
     //position
     float pn,pe,pd;
     //velocity
     float vn,ve,vd;
     //linear acceleration
     float an,ae,ad;
+    //radio details
+    int16_t rssi; 
+    float snr;
+
     
     uint64_t timestamp;
 

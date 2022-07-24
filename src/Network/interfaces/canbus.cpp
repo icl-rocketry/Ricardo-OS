@@ -50,7 +50,9 @@ void CanBus::sendPacket(RnpPacket& data){
         return;
     }
     if (_sendBuffer.size() + 1 > _info.maxSendBufferElements){
-        _systemstatus.newFlag(SYSTEM_FLAG::ERROR_CAN,"Can Send Buffer Overflow!");
+        if (!_systemstatus.flagSet(SYSTEM_FLAG::ERROR_CAN)){
+            _systemstatus.newFlag(SYSTEM_FLAG::ERROR_CAN,"Can Send Buffer Overflow!");
+        }
         _info.sendBufferOverflow = true;
         return;
     }

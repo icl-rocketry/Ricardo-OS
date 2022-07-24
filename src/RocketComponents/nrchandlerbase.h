@@ -19,7 +19,7 @@
 #include "rocketcomponent.h"
 
 #include "packets/nrcpackets.h"
-#include "Commands/commandpacket.h"
+#include <default_packets/simplecommandpacket.h>
 
 #include <rnp_networkmanager.h>
 
@@ -44,51 +44,47 @@ public:
 protected:
 
     RnpNetworkManager& _networkmanager;
-    uint8_t _componentState;
+    RocketComponentState _state;
 
     void handlecommand(packetptr_t packetptr){
         //check packet is a command packet
         if (packetptr->header.type == static_cast<uint8_t>(NRCPacket::TYPES::NRC_COMMAND)){
-            switch(static_cast<NRC_COMMAND_ID>(CommandPacket::getCommand(&packetptr))){
-                case GETSTATE:
+            
+            const NRCPacket::NRC_COMMAND_ID commandID = static_cast<NRCPacket::NRC_COMMAND_ID>(CommandPacket::getCommand(*packetptr));
+           
+            switch(commandID){
+                case NRCPacket::NRC_COMMAND_ID::GETSTATE:
                 {
                     static_cast<Derived*>(this)->getstate_impl(std::move(packetptr));
                     break;
                 }
-                case EXECTUE:
-                {
-                    if (_componentState == static_cast<uint8_t>(COMPONET_STATE::NOMINAL)){
-                        static_cast<Derived*>(this)->exectue_impl(std::move(packetptr));
-                    }
-                    break:
-                }
-                case ARM:
-                {
-                    static_cast<Derived*>(this)->arm_imp(std::move(packetptr));
-                    break:
-                }
-                case DISARM:
-                {
-                    static_cast<Derived*>(this)->disarm_impl(std::move(packetptr));
-                    break;
-                }
                 default:
                 {
-                    static_cast<Derived*>(this)->extendedCommandHandler_impl(std::move(packetptr));
+                    static_cast<Derived*>(this)->extendedCommandHandler_impl(commandID,std::move(packetptr));
                     break;
                 }
             }
+
         }
     }
+    //default implementations - can be overriden by function hiding as this is crtp
+    /**
+     * @brief Handle getstate requests
+     * 
+     * @param packetptr 
+     */
+    void getstate_impl(packetptr_t packetptr)
+    {
+        SimpleCommandPacket getstate_request(*packetptr);
+        NRCStatePacket getstate_response;
+        RnpHeader::generateResponseHeader(getstate_request.header,getstate_response.header);
+        getstate_response.state = _state.getStatus();
+        _networkmanager.sendPacket(getstate_response);
 
-    void getstate_impl(packetptr_t packetptr){};
-    void execute_impl(packetptr_t packetptr){};
-    void arm_impl(packetptr_t packetptr){};
-    void disarm_impl(packetptr_t packetptr){};
-    void extendedCommandHandler_impl(packetptr_t packetptr){};
+        
+
+    };
+   
+    void extendedCommandHandler_impl(const NRCPacket::NRC_COMMAND_ID commandID,packetptr_t packetptr){};
      
-
-
-
-
 };

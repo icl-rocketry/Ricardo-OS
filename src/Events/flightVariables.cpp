@@ -15,7 +15,7 @@
 
 const std::unordered_map<std::string, memberFunc_t> FlightVariables::function_map {
 	{"TimeSinceIgnition", &FlightVariables::TimeSinceIgnition},
-	{"TimeSinceLaunch", &FlightVariables::TimeSinceLaunch},
+	{"TimeSinceLiftoff", &FlightVariables::TimeSinceLiftoff},
 	{"TimeSinceApogee", &FlightVariables::TimeSinceApogee},
 	{"TimeSinceEvent", &FlightVariables::TimeSinceEvent},
 	{"Position", &FlightVariables::Position},
@@ -28,9 +28,9 @@ flightVariable_t FlightVariables::TimeSinceIgnition(int arg)
 	return timeSince(_state.ignitionTime);
 }
 
-flightVariable_t FlightVariables::TimeSinceLaunch(int arg) 
+flightVariable_t FlightVariables::TimeSinceLiftoff(int arg) 
 {
-	return timeSince(_state.launchTime);
+	return timeSince(_state.liftoffTime);
 }
 
 flightVariable_t FlightVariables::TimeSinceApogee(int arg) 

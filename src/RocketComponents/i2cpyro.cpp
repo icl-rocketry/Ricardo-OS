@@ -67,6 +67,7 @@ void I2CPyro::arm(){
     //verify the only flag triggered is the unarmed flag
     if (_state.getStatus() == static_cast<uint16_t>(COMPONENT_STATUS_FLAGS::DISARMED))
     {
+        _state.deleteFlag(COMPONENT_STATUS_FLAGS::DISARMED);
         _state.newFlag(COMPONENT_STATUS_FLAGS::NOMINAL); // arm this shit
     }else{
         _logcontroller.log("Pyro: " + std::to_string(_id) + " arming failed due to errors: " + std::to_string(_state.getStatus()));
@@ -101,7 +102,7 @@ void I2CPyro::execute(int32_t param)
 
     // initialize new task data
     TaskData_t taskdata{_address, _nukePin, param, _wire};
-    
+
     if (async_off_task_handle != nullptr)
     {
         vTaskDelete(async_off_task_handle); // remove previous running task and replace with new task
@@ -120,7 +121,7 @@ void I2CPyro::execute(int32_t param)
                                 taskdata.wire.write(OUTPUT_PORT);
                                 taskdata.wire.endTransmission();
 
-                                taskdata.wire.requestFrom(taskdata.address, static_cast<uint8_t>(1));
+                                taskdata.wire.requestFrom(taskdata.address, static_cast<uint8_t>(1)); // wtf why am i casting to uint8_t lol
                                 if (taskdata.wire.available())
                                 {
                                     output = taskdata.wire.read();

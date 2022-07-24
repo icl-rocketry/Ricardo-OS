@@ -67,7 +67,7 @@ uint8_t DeploymentHandler::flightCheck_impl()
     uint8_t components_in_error = 0;
     for (auto &component : *this)
     {
-        components_in_error += component->flightCheck(_networkRetryInterval,"DeploymentHandler");
+        components_in_error += component->flightCheck(_networkRetryInterval,_componentStateExpiry,"DeploymentHandler");
     }
     return components_in_error;
 }

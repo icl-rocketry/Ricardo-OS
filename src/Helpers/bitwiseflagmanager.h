@@ -37,7 +37,7 @@ public:
 
     bool flagSet(T flag) const
     {
-        return flagSetOr(flag);
+        return flagSetOr(flag); 
     };
 
     /**

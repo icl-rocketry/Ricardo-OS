@@ -55,7 +55,7 @@ class NRCStatePacket : public RnpPacket{
          */
         void serialize(std::vector<uint8_t>& buf) override;
 
-        uint8_t state;
+        uint16_t state;
         int32_t value;
 
         static constexpr size_t size(){

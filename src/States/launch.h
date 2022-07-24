@@ -2,19 +2,17 @@
 lauches rocket
 */
 
-
-#ifndef LAUNCH_H
-#define LAUNCH_H
+#pragma once
 
 #include "state.h"
 
-
-class Launch: public State {
+class Launch : public State
+{
   public:
-    Launch(stateMachine* sm);
+    Launch(stateMachine *sm);
     void initialise();
-    State* update();
+    State *update();
     void exitstate();
-};
 
-#endif
+
+};

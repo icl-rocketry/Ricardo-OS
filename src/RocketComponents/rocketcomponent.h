@@ -14,13 +14,13 @@
 
 
 enum class COMPONENT_STATUS_FLAGS:uint16_t{
-    NOMINAL = 0,
-    DISARMED = (1<<0),
-    ERROR_NORESPONSE = (1<<1),
-    ERROR_CONTINUITY = (1<<2),
-    ERROR_PINS = (1<<3),
-    ERROR_I2C = (1<<4),
-    ERROR = (1<<5) //generic error
+    NOMINAL = (1<<0),
+    DISARMED = (1<<1),
+    ERROR_NORESPONSE = (1<<2),
+    ERROR_CONTINUITY = (1<<3),
+    ERROR_PINS = (1<<4),
+    ERROR_I2C = (1<<5),
+    ERROR = (1<<6) //generic error
 };
 
 using component_status_flags_t = uint16_t;
@@ -31,16 +31,7 @@ struct RocketComponentState : public BitwiseFlagManager<COMPONENT_STATUS_FLAGS,c
 
     uint32_t lastNewStateUpdateTime;
     uint32_t lastNewStateRequestTime;
-
-    void newFlag(COMPONENT_STATUS_FLAGS flag) override final
-    {
-        if (flag == COMPONENT_STATUS_FLAGS::NOMINAL)
-        {
-            BitwiseFlagManager::_statusString = 0;
-            return;
-        }
-        BitwiseFlagManager::newFlag(flag);
-    };
+    component_status_flags_t previousStatus; // used to track changes in state
 
     /**
      * @brief Allows tracking of the state of remote components such as
@@ -63,14 +54,14 @@ class RocketComponent{
         {};
         
         /**
-         * @brief Returns a const piinter to the component state for external objects to 
+         * @brief Returns a const pointer to the component state for external objects to 
          * get the last received state of the component.
          * 
          * @return const RocketComponentState* 
          */
         const RocketComponentState* getState(){return p_getState();};
         virtual void updateState() = 0;
-        virtual bool flightCheck(uint32_t netRetryInterval,std::string handler);
+        virtual bool flightCheck(uint32_t netRetryInterval,uint32_t stateExpiry,std::string handler);
         virtual ~RocketComponent() = 0;
 
         uint8_t getID(){return _id;};

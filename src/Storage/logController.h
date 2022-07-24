@@ -31,7 +31,7 @@ class LogController{
         LogController(StorageController* storagecontroller,RnpNetworkManager& netman);
         void setup();
         //telemtry logging
-        void log(const SensorStructs::state_t &estimator_state ,const SensorStructs::raw_measurements_t &raw_sensors,bool force=false);
+        void log(const SensorStructs::state_t &estimator_state ,const SensorStructs::raw_measurements_t &raw_sensors,int16_t rssi,float snr,bool force=false);
         //network logging
 		//void log(PacketHeader &header);
         //system logging

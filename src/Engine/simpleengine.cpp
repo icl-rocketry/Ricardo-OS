@@ -53,7 +53,7 @@ void SimpleEngine::updateState(){
 }
 
 uint8_t SimpleEngine::flightCheck(){
-    return _igniter->flightCheck(_networkRetryInterval,"SimpleEngine");
+    return _igniter->flightCheck(_networkRetryInterval,_componentStateExpiry,"SimpleEngine");
 }
 
 void SimpleEngine::ignite(){

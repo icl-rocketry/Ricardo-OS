@@ -48,6 +48,6 @@ class DeploymentHandler : public FlightComponentHandler<RocketActuator,Deploymen
          
     private:
         static constexpr uint16_t _networkRetryInterval = 5000; // 5 seconds before a new update state request is sent
-
+        static constexpr uint16_t _componentStateExpiry = 1000; //1 second expiry
         TwoWire& _wire;
 };

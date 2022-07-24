@@ -20,7 +20,10 @@ void Recovery::initialise(){
 
 State* Recovery::update(){
 
-
+    _sm->enginehandler.update();
+    _sm->controllerhandler.update(_sm->estimator.getData());
+    _sm->eventhandler.update(_sm->estimator.getData());
+    
     return this;
 };
 

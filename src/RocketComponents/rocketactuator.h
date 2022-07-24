@@ -20,8 +20,6 @@ class RocketActuator: public RocketComponent{
 
         virtual void execute(int32_t param) = 0;
 
-        virtual bool flightCheck(uint32_t networkRetryInterval,std::string handler);
-
         virtual ~RocketActuator() = 0;
 
 };

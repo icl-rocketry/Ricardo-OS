@@ -244,16 +244,20 @@ void Estimator::resetLocalization()
 void Estimator::setIgnitionTime(uint32_t time)
 {
    state.ignitionTime = time;
+   _logcontroller.log("Ignition commanded at " + std::to_string(time));
 }
 
-void Estimator::setLaunchTime(uint32_t time)
+void Estimator::setLiftoffTime(uint32_t time)
 {
-   state.launchTime = time;
+   state.liftoffTime = time;
+   _logcontroller.log("Liftoff detected at " + std::to_string(time));
 }
 
 void Estimator::setApogeeTime(uint32_t time)
 {
    state.apogeeTime = time;
+   _logcontroller.log("Apogee detected at " + std::to_string(time));
+   
 }
 
 const SensorStructs::state_t &Estimator::getData()

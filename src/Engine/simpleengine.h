@@ -46,6 +46,7 @@ class SimpleEngine:public Engine{
         void shutdown() override ; 
 
         static constexpr uint16_t _networkRetryInterval = 5000;
+        static constexpr uint16_t _componentStateExpiry = 1000;
 
 
 };

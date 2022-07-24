@@ -22,7 +22,7 @@ class Hypnos:public Engine{
 
         void update() override {}; 
 
-        void arm() override;
+        void armEngine() override;
 
         const EngineState* getState()override {return &_state;};
 
@@ -45,5 +45,6 @@ class Hypnos:public Engine{
         
 
         static constexpr uint16_t _networkRetryInterval = 5000;
+        static constexpr uint16_t _componentStateExpiry = 1000;
 
 };

@@ -28,7 +28,7 @@ void TelemetryLogger::disable(){
 };
 
 
-void TelemetryLogger::log(const SensorStructs::state_t &estimator_state ,const SensorStructs::raw_measurements_t &raw_sensors,uint64_t time){
+void TelemetryLogger::log(const SensorStructs::state_t &estimator_state ,const SensorStructs::raw_measurements_t &raw_sensors,int16_t rssi,float& snr,uint64_t time){
 
     if (!_status){
         return; // check if logger is enabled
@@ -46,6 +46,9 @@ void TelemetryLogger::log(const SensorStructs::state_t &estimator_state ,const S
     telemetry_frame.ax = raw_sensors.accelgyro.ax;
     telemetry_frame.ay = raw_sensors.accelgyro.ay;
     telemetry_frame.az = raw_sensors.accelgyro.az;
+    telemetry_frame.h_ax = raw_sensors.accel.ax;
+    telemetry_frame.h_ay = raw_sensors.accel.ay;
+    telemetry_frame.h_az = raw_sensors.accel.az;
     telemetry_frame.gx = raw_sensors.accelgyro.gx;
     telemetry_frame.gy = raw_sensors.accelgyro.gy;
     telemetry_frame.gz = raw_sensors.accelgyro.gz;
@@ -61,6 +64,10 @@ void TelemetryLogger::log(const SensorStructs::state_t &estimator_state ,const S
     telemetry_frame.roll = estimator_state.eulerAngles[0];
     telemetry_frame.pitch = estimator_state.eulerAngles[1];
     telemetry_frame.yaw = estimator_state.eulerAngles[2];
+    telemetry_frame.q0 = estimator_state.orientation.w();
+    telemetry_frame.q1 = estimator_state.orientation.x();
+    telemetry_frame.q2 = estimator_state.orientation.y();
+    telemetry_frame.q3 = estimator_state.orientation.z();
     telemetry_frame.pn = estimator_state.position[0];
     telemetry_frame.pe = estimator_state.position[1];
     telemetry_frame.pd = estimator_state.position[2];
@@ -70,6 +77,8 @@ void TelemetryLogger::log(const SensorStructs::state_t &estimator_state ,const S
     telemetry_frame.an = estimator_state.acceleration[0];
     telemetry_frame.ae = estimator_state.acceleration[1];
     telemetry_frame.ad = estimator_state.acceleration[2];
+    telemetry_frame.rssi = rssi;
+    telemetry_frame.snr = snr;
     telemetry_frame.timestamp = time;
 
     //check capacity of vector

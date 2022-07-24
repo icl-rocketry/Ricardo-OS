@@ -2,9 +2,10 @@
 
 
 #include "networkactuator.h"
+#include <default_packets/simplecommandpacket.h>
 
 #include "packets/nrcpackets.h"
-#include "Commands/commandpacket.h"
+
 
 
 

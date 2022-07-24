@@ -179,15 +179,17 @@ void stateMachine::update() {
   //process updated sensor data
   estimator.update(sensors.getData());
 
-  logcontroller.log(estimator.getData(),sensors.getData());// log new navigation solution and sensor output
+  logcontroller.log(estimator.getData(),
+                    sensors.getData(),
+                    static_cast<const RadioInterfaceInfo*>(radio.getInfo())->rssi,
+                    static_cast<const RadioInterfaceInfo*>(radio.getInfo())->snr);// log new navigation solution and sensor output
 
   //check for new packets and process
 
   networkmanager.update();
 
-  enginehandler.update();
-  controllerhandler.update(estimator.getData());
-  eventhandler.update(estimator.getData());
+ 
+  
 
   //call update on state after new information has been processed
   State* newStatePtr = _currStatePtr->update();
