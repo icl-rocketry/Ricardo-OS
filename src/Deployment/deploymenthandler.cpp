@@ -9,13 +9,15 @@
 
 #include "Helpers/jsonconfighelper.h"
 
-#include "RocketComponents/rocketcomponent.h"
-#include "RocketComponents/rocketcomponenttype.h"
+#include <librrc/rocketcomponent.h>
+#include <librrc/rocketcomponenttype.h>
 
-#include "RocketComponents/networkactuator.h"
-#include "RocketComponents/packets/nrcpackets.h"
+#include <librrc/networkactuator.h>
+#include <librrc/packets/nrcpackets.h>
 
-#include "RocketComponents/i2cpyro.h"
+#include <librrc/i2cpyro.h>
+
+#include "Storage/logController.h"
 
 void DeploymentHandler::setupIndividual_impl(size_t id,JsonObjectConst deployerconfig)
 {
@@ -31,20 +33,20 @@ void DeploymentHandler::setupIndividual_impl(size_t id,JsonObjectConst deployerc
         auto channel = getIfContains<uint8_t>(deployerconfig,"channel");
         auto invertContinuity = getIfContains<bool>(deployerconfig,"invertContinuity");
         addObject(std::make_unique<I2CPyro>(id, 
-                                            _logcontroller,
                                             address,
                                             channel,
                                             invertContinuity, 
-                                            _wire));
+                                            _wire,
+                                            _logcb));
     }else if (type == "net_actuator"){
         auto address = getIfContains<uint8_t>(deployerconfig,"address");
         auto destination_service = getIfContains<uint8_t>(deployerconfig,"destination_service");
-        addObject(std::make_unique<NetworkActuator>(id, 
-                                                    _logcontroller,
+        addObject(std::make_unique<NetworkActuator>(id,  
                                                     address,
                                                     _serviceID,
                                                     destination_service, 
-                                                    _networkmanager));
+                                                    _networkmanager,
+                                                    _logcb));
         //umm i tried okay
         addNetworkCallback(address,
                            destination_service,

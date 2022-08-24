@@ -22,7 +22,7 @@
 #include "Controller/controllable.h"
 
 #include <rnp_networkcallbackmap.h>
-#include "RocketComponents/rocketcomponent.h"
+#include <librrc/rocketcomponent.h>
 
 #include "Storage/logController.h"
 

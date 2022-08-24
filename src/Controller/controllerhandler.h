@@ -9,20 +9,23 @@
 #include "controllable.h"
 #include "Engine/enginehandler.h"
 
-#include "RocketComponents/configurabledynamichandler.h"
+#include <librrc/configurabledynamichandler.h>
 
 #include "Storage/logController.h"
 
 class ControllerHandler :public ConfigurableDynamicHandler<Controller,ControllerHandler>{
     public:
         ControllerHandler(EngineHandler& enginehandler,LogController& logcontroller):
-            ConfigurableDynamicHandler(logcontroller), 
+            ConfigurableDynamicHandler(logcontroller.getLogCB()), 
+            _logcontroller(logcontroller),
             _enginehandler(enginehandler)
         {};
 
         void update(const SensorStructs::state_t& estimator_state);
 
     protected:
+
+        LogController& _logcontroller; // unsure wether to use log cb or logcontroller, so kept the old way for now
 
         EngineHandler& _enginehandler; // currently only supporting engines but can be expanded later to support controllable fins or more!
 

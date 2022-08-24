@@ -10,11 +10,13 @@
 #include <Wire.h>
 
 
-#include "RocketComponents/rocketactuator.h"
+#include <librrc/rocketactuator.h>
 
-#include "RocketComponents/flightcomponenthandler.h"
-#include "RocketComponents/configurabledynamichandler.h"
-#include "RocketComponents/networkeddynamichandler.h"
+#include <librrc/flightcomponenthandler.h>
+#include <librrc/configurabledynamichandler.h>
+#include <librrc/networkeddynamichandler.h>
+
+#include "Storage/logController.h"
 
 
 
@@ -28,7 +30,7 @@ class DeploymentHandler : public FlightComponentHandler<RocketActuator,Deploymen
          * @param logcontroller 
          */
         DeploymentHandler(RnpNetworkManager& networkmanager,uint8_t serviceID,TwoWire& wire,LogController& logcontroller):
-            FlightComponentHandler(networkmanager,serviceID,logcontroller),
+            FlightComponentHandler(networkmanager,serviceID,logcontroller.getLogCB()),
             _wire(wire)
         {};
 

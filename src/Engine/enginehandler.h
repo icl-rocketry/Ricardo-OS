@@ -11,7 +11,7 @@
 #include <rnp_networkmanager.h>
 
 #include "engine.h"
-#include "RocketComponents/flightcomponenthandler.h"
+#include <librrc/flightcomponenthandler.h>
 
 
 #include "Storage/logController.h"
@@ -21,7 +21,8 @@ using addNetworkCallbackF_t = std::function<void(uint8_t,uint8_t,std::function<v
 class EngineHandler : public FlightComponentHandler<Engine,EngineHandler>{
     public:
         EngineHandler(RnpNetworkManager& networkmanager,uint8_t serviceID,LogController& logcontroller):
-        FlightComponentHandler(networkmanager,serviceID,logcontroller)
+        FlightComponentHandler(networkmanager,serviceID,logcontroller.getLogCB()),
+        _logcontroller(logcontroller)
         {};
 
         void update(); // calls update on all engines
@@ -46,5 +47,7 @@ class EngineHandler : public FlightComponentHandler<Engine,EngineHandler>{
          * @return addNetworkCallbackF_t 
          */
         addNetworkCallbackF_t getaddNetworkCallbackFunction(uint8_t engineID);
+
+        LogController& _logcontroller;
 
 };

@@ -4,8 +4,8 @@
 
 #include <ArduinoJson.h>
 
-#include "RocketComponents/networkactuator.h"
-#include "RocketComponents/configurabledynamichandler.h"
+#include <librrc/networkactuator.h>
+#include <librrc/configurabledynamichandler.h>
 
 #include "Storage/logController.h"
 #include "Helpers/jsonconfighelper.h"
@@ -24,11 +24,11 @@ Engine(id,engineConfig,addNetworkCallbackF,networkmanager,handlerServiceID,logco
         auto igniterAddress = getIfContains<uint8_t>(igniterConf,"address");
         auto igniterDestinationService = getIfContains<uint8_t>(igniterConf,"destination_service");
         _igniter = std::make_unique<NetworkActuator>(0,
-                                                     logcontroller,
                                                      igniterAddress,
                                                      _handlerServiceID,
                                                      igniterDestinationService,
-                                                     networkmanager);
+                                                     networkmanager,
+                                                     logcontroller.getLogCB());
         addNetworkCallbackF(igniterAddress,
                             igniterDestinationService,
                             [this](packetptr_t packetptr)

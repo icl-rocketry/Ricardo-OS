@@ -39,6 +39,8 @@ class LogController{
         void log(uint32_t status,uint32_t flag,std::string message);
         void log(uint32_t status,uint32_t flag);
 
+        std::function<void(const std::string&)> getLogCB(){return [this](const std::string& message){this->log(message);};};
+
         void stopLogging(LOG_TYPE log);
         void startLogging(LOG_TYPE log);
 

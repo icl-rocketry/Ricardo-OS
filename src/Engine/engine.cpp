@@ -4,7 +4,7 @@
 #include <memory>
 #include <rnp_networkmanager.h>
 
-#include "RocketComponents/rocketcomponent.h"
+#include <librrc/rocketcomponent.h>
 
 
 #include "Storage/logController.h"

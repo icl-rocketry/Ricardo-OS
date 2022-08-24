@@ -5,7 +5,7 @@
 #include <ArduinoJson.h>
 #include <memory>
 
-#include "RocketComponents/rocketactuator.h"
+#include <librrc/rocketactuator.h>
 
 struct HypnosState:public EngineState{
 
