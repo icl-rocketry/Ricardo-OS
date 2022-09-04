@@ -66,7 +66,7 @@ void EngineHandler::setupIndividual_impl(size_t id, JsonObjectConst engineconfig
 
 }
 
-addNetworkCallbackF_t EngineHandler::getaddNetworkCallbackFunction(uint8_t engineID)
+addNetworkCallbackFunction_t EngineHandler::getaddNetworkCallbackFunction(uint8_t engineID)
 {
     return [this,engineID](uint8_t source, uint8_t source_service, std::function<void(std::unique_ptr<RnpPacketSerialized>)> callback, bool throwOnError)
     {

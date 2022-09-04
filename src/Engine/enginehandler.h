@@ -16,7 +16,7 @@
 
 #include "Storage/logController.h"
 
-using addNetworkCallbackF_t = std::function<void(uint8_t,uint8_t,std::function<void(std::unique_ptr<RnpPacketSerialized>)>,bool)>;
+using addNetworkCallbackFunction_t = std::function<void(uint8_t,uint8_t,std::function<void(std::unique_ptr<RnpPacketSerialized>)>,bool)>;
 
 class EngineHandler : public FlightComponentHandler<Engine,EngineHandler>{
     public:
@@ -44,9 +44,9 @@ class EngineHandler : public FlightComponentHandler<Engine,EngineHandler>{
          * @brief Function to allow engines to add network callbacks directly to the network callback map.
          * Wraps the provided network callback to check that engine exists at the correct ID.
          * 
-         * @return addNetworkCallbackF_t 
+         * @return addNetworkCallbackFunction_t 
          */
-        addNetworkCallbackF_t getaddNetworkCallbackFunction(uint8_t engineID);
+        addNetworkCallbackFunction_t getaddNetworkCallbackFunction(uint8_t engineID);
 
         LogController& _logcontroller;
 

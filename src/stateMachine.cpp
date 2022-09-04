@@ -127,9 +127,9 @@ void stateMachine::initialise(State* initStatePtr) {
   networkmanager.registerService(static_cast<uint8_t>(DEFAULT_SERVICES::COMMAND),commandhandler.getCallback()); 
 
   //setup storage and logging so any erros encoutered can be logged
-  storagecontroller.setup();
-    
+  storagecontroller.setup(); 
   logcontroller.setup();
+  
   networkmanager.setLogCb([this](const std::string& message){return logcontroller.log(message);});
 
   // create config controller object

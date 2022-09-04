@@ -7,100 +7,82 @@
 #include <Arduino.h>
 // #include "millis.h"
 
-ApogeeDetect::ApogeeDetect():
-mlock(true),        //intialise the mach lockout stuff
-mlock_speed(30.48),
-alt_min(100),
-_apogeeinfo({false,0,0})
+ApogeeDetect::ApogeeDetect(uint16_t sampleTime) : _sampleTime(sampleTime),
+                                                  time_array{0},
+                                                  altitude_array{0},
+                                                  mlock(true), // intialise the mach lockout stuff
+                                                  _apogeeinfo({false, 0, 0})
+{}
+
+// Function to update flight data values and return data for apogee prediction
+const ApogeeInfo &ApogeeDetect::checkApogee(float altitude, float velocity, uint32_t time)
 {
- 
-
-    //Apogee detect stuff
-    // apogee_reached = false;
-    // apogee_index = -1;
-    // apo_predict = 0;
-    // apo_index = {3,4,5};                 //WHAT IS THIS-----------------------
-    // alt_initial = millis();                 //take the initial altitude to calculate the change in alt later
-    //Reading flight data
-
-    // len_time = sizeof(time)/time[1];    //length of the time vector
-}
-
-//Function to update flight data values and return data for apogee prediction
-const ApogeeInfo& ApogeeDetect::checkApogee(float altitude,float velocity,uint32_t time)
-{
-    // if (!(mlock_index = -1))
-    // {
-    //[0 1 2 3 4]
-    //[-1 0 1 2 3]
-
-    //Initialising and creating the ring buffers using memory copy (maintains newest updated values in the arrays, deletes oldest value)
-    std::memcpy(time_array.data()+1,time_array.data(),(arrayLen-1)*sizeof(uint32_t));       //new value assigned is at 0 index, oldest value is at 4th index
-    time_array.at(0) = time;
-
-    std::memcpy(altitude_array.data()+1,altitude_array.data(),(arrayLen-1)*sizeof(float));
-    altitude_array.at(0) = altitude;
-
-    std::memcpy(velocity_array.data()+1,velocity_array.data(),(arrayLen-1)*sizeof(float));
-    velocity_array.at(0) = velocity;
-    
-    //Mach lock check:
-    if (abs(velocity) >= mlock_speed)
+    if (millis() - prevCheckApogeeTime > _sampleTime)
     {
-        mlock = true;
-        prevMachLockTime = millis();
-        // log time
-    }
-    else if ((millis() - prevMachLockTime) > 1000)      //if more than a second has passed and vel is less than mlock_speed
-    {
-        mlock = false;
-        // log the time
-    }
+        uint32_t prevTime = time_array.pop_push_back(time);
+        uint32_t prevAltitude = altitude_array.pop_push_back(altitude);
 
-
-    // Apogee detection:
-
-    if (!(_apogeeinfo.reached) && (altitude > alt_min))
-    {
-        Polyval(time_array, altitude_array); // POLYFIT -> x(t), time in ms
-        _apogeeinfo.time = -coeffs(1) / (2 * coeffs(2));  // maximum from polyinomial using derivative
-        if ((millis() >= _apogeeinfo.time) && (coeffs(2) < 0) && (millis() > 0))
+        // Mach lock check:
+        if (abs(velocity) >= mlock_speed)
         {
-            _apogeeinfo.altitude = coeffs(2)*(_apogeeinfo.time*_apogeeinfo.time) + (coeffs(1)*_apogeeinfo.time) + coeffs(0); //evalute 2nd order polynomial
-            if ((altitude - _apogeeinfo.altitude) < 0){
-                _apogeeinfo.reached = true;
-                //log apogee time and altitude
-                return _apogeeinfo;
+            mlock = true;
+            prevMachLockTime = millis();
+
+            // log time
+        }
+        else if ((millis() - prevMachLockTime) > mlock_time) // if more than a second has passed and vel is less than mlock_speed
+        {
+            mlock = false;
+            // log the time
+        }
+
+        // Apogee detection:
+
+        if (!(_apogeeinfo.reached) && (altitude > alt_min) && !mlock)
+        {
+            // coeffs = poly2fit(time_array, altitude_array); // POLYFIT -> x(t), time in ms
+            quadraticFit(prevTime,time,prevAltitude,altitude);
+            
+            _apogeeinfo.time = -coeffs(1) / (2 * coeffs(2)); // maximum from polyinomial using derivative
+
+            if ((millis() >= _apogeeinfo.time) && (coeffs(2) < 0) && (millis() > 0))
+            {
+                _apogeeinfo.altitude = coeffs(0) - (std::pow(coeffs(1),2)/(4*coeffs(2)));
+                
+                // coeffs(2) * std::pow(_apogeeinfo.time,2) + (coeffs(1) * _apogeeinfo.time) + coeffs(0); // evalute 2nd order polynomial
+                if ((altitude - _apogeeinfo.altitude) < alt_threshold) // if we have passed apogee and now decending, could put a bound on here too
+                {
+                    _apogeeinfo.reached = true;
+                    // log apogee time and altitude
+                }
             }
-    
         }
     }
-
-    _apogeeinfo.reached = false;
+    prevCheckApogeeTime = millis();
     return _apogeeinfo;
+};
 
+void ApogeeDetect::updateSigmas(uint32_t oldTime, uint32_t newTime, float oldAlt, float newAlt){
+    sigmaTime += (newTime-oldTime);
+    sigmaTime_2 += (std::pow(newTime,2) - std::pow(oldTime,2));
+    sigmaTime_3 += (std::pow(newTime,3) - std::pow(oldTime,3));
+    sigmaTime_4 += (std::pow(newTime,4) - std::pow(oldTime,4));
+    sigmaAlt += (newAlt-oldAlt);
+    sigmaAltTime += ((newAlt*float(newTime)) - (oldAlt*float(oldAlt)));
+    sigmaAltTime_2 += ((newAlt*float(std::pow(newTime,2))) - (oldAlt*float(std::pow(oldAlt,2)))); 
 };
 
 /*Create a matrix, three simulatneos equations */
-std::array<float,2> ApogeeDetect::Polyval(std::array<uint32_t,arrayLen> time_array, std::array<float,arrayLen> altitude_array)
+void ApogeeDetect::quadraticFit(uint32_t oldTime, uint32_t newTime, float oldAlt, float newAlt)
 {
-    //std::array<float,3> arrayConstants = {0,0,0};
-    //int matrixConstants[3][3];
-    //simultaneos equation instantiation, in form Ax=b
-    for(int i = 0;i<arrayLen;i++)
-    {
-        //create the b array by summing the results
-        //arrayConstants = {arrayConstants.at(0) + altitude_array.at(i), arrayConstants.at(1) + altitude_array.at(i)*time_array.at(i), arrayConstants.at(2) + altitude_array.at(i)*(time_array.at(i)^2)};
-        //create the matrix of coefficients(A):
-        //matrixConstants = {{3,matrixConstants[0][1]+time_array.at(i),matrixConstants[0][2]+(time_array.at(i)^2)},{matrixConstants[1][0]+time_array.at(i),matrixConstants[1][1]+(time_array.at(i)^2),matrixConstants[1][2]+(time_array.at(i)^3)},{matrixConstants[2][0]+(time_array.at(i)^2),matrixConstants[2][1]+(time_array.at(i)^3),matrixConstants[2][2]+(time_array.at(i)^4)}};
-        A << {
-            {3,x(0,1)+time_array.at(i),x(0,2)+(time_array.at(i)^2)},
-            {x(1,0)+time_array.at(i),x(1,1)+(time_array.at(i)^2),x(1,2)+(time_array.at(i)^3)},
-            {x(2,0)+(time_array.at(i)^2),x(2,1)+(time_array.at(i)^3),x(2,2)+(time_array.at(i)^4)}
-        };
-    
-        b << {{arrayConstants.at(0) + altitude_array.at(i), arrayConstants.at(1) + altitude_array.at(i)*time_array.at(i), arrayConstants.at(2) + altitude_array.at(i)*(time_array.at(i)^2)}};
-    }
-    //solve the system:
-    coeffs = A.colPivHouseholderQr().solve(b);
+    updateSigmas(oldTime, newTime, oldAlt, newAlt); // update sigmas with new values and remove old values
+    //re populate the arrays
+    A << arrayLen, sigmaTime, sigmaTime_2,
+        sigmaTime, sigmaTime_2, sigmaTime_3,
+        sigmaTime_2, sigmaTime_3, sigmaTime_4;
+
+    b << sigmaAlt, sigmaAltTime, sigmaAltTime_2;
+    //solve the system for the coefficents -> if this is too slow, look into using LLT cholesky decomp
+    coeffs = A.householderQr().solve(b); 
+
 }

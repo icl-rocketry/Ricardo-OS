@@ -10,7 +10,7 @@
 
 class SimpleEngine:public Engine{
     public:
-        SimpleEngine(uint8_t id,JsonObjectConst engineConfig,addNetworkCallbackF_t addNetworkCallbackF,RnpNetworkManager& networkmanager,uint8_t handlerServiceID,LogController& logcontroller);
+        SimpleEngine(uint8_t id,JsonObjectConst engineConfig,addNetworkCallbackFunction_t addNetworkCallbackF,RnpNetworkManager& networkmanager,uint8_t handlerServiceID,LogController& logcontroller);
 
         void updateState() override;
 
@@ -20,7 +20,6 @@ class SimpleEngine:public Engine{
 
         void update() override {}; //empty we dont need an update as this a simple on and off
 
-        const EngineState* getState()override {return &_state;};
         /**
          * @brief No control of a simple engine
          * 
@@ -38,12 +37,13 @@ class SimpleEngine:public Engine{
 
     private:
         EngineState _state;
+        EngineState* getStatePtr() override {return &_state;};
 
         std::unique_ptr<RocketActuator> _igniter;
         int32_t _igniterParam;
 
         void ignite() override;
-        void shutdown() override ; 
+        void shutdown() override; 
 
         static constexpr uint16_t _networkRetryInterval = 5000;
         static constexpr uint16_t _componentStateExpiry = 1000;

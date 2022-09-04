@@ -10,8 +10,9 @@
 #include "Storage/logController.h"
 #include "Helpers/jsonconfighelper.h"
 
-SimpleEngine::SimpleEngine(uint8_t id,JsonObjectConst engineConfig,addNetworkCallbackF_t addNetworkCallbackF,RnpNetworkManager& networkmanager,uint8_t handlerServiceID,LogController& logcontroller):
-Engine(id,engineConfig,addNetworkCallbackF,networkmanager,handlerServiceID,logcontroller)
+SimpleEngine::SimpleEngine(uint8_t id,JsonObjectConst engineConfig,addNetworkCallbackFunction_t addNetworkCallbackFunction,RnpNetworkManager& networkmanager,uint8_t handlerServiceID,LogController& logcontroller):
+Engine(id,engineConfig,addNetworkCallbackFunction,networkmanager,handlerServiceID,logcontroller),
+_state({static_cast<uint8_t>(ENGINE_RUN_STATE::SHUTDOWN),})
 {
     using namespace JsonConfigHelper;
     auto igniterConf = getIfContains<JsonObjectConst>(engineConfig,"igniter");
@@ -29,7 +30,7 @@ Engine(id,engineConfig,addNetworkCallbackF,networkmanager,handlerServiceID,logco
                                                      igniterDestinationService,
                                                      networkmanager,
                                                      logcontroller.getLogCB());
-        addNetworkCallbackF(igniterAddress,
+        addNetworkCallbackFunction(igniterAddress,
                             igniterDestinationService,
                             [this](packetptr_t packetptr)
                                 {
@@ -53,20 +54,27 @@ void SimpleEngine::updateState(){
 }
 
 uint8_t SimpleEngine::flightCheck(){
-    return _igniter->flightCheck(_networkRetryInterval,_componentStateExpiry,"SimpleEngine");
+    uint8_t flightcheck_result = _igniter->flightCheck(_networkRetryInterval,_componentStateExpiry,"SimpleEngine");
+    if (_igniter->getState()->flagSet(COMPONENT_STATUS_FLAGS::ERROR_NORESPONSE) ){
+        _state.connectionState = static_cast<uint8_t>(ENGINE_CONNECTION_STATE::ERROR);
+    }else{
+        _state.connectionState = static_cast<uint8_t>(ENGINE_CONNECTION_STATE::CONNECTED);
+    }
+    return flightcheck_result;
 }
 
 void SimpleEngine::ignite(){
     Engine::ignite();
     _igniter->execute(_igniterParam); // fire the pyro let it rip
-    _state.ignitionTime = millis();
+    _state.runState = static_cast<uint8_t>(ENGINE_RUN_STATE::RUNNING);// goes straight to running state as there is no igntion time
 }
 
-void SimpleEngine::shutdown(){ // the engine cant be shut down
+void SimpleEngine::shutdown(){ // the engine cant be shut down lol
     Engine::shutdown();
-    _state.shutdownTime = millis();
+    _state.runState = static_cast<uint8_t>(ENGINE_RUN_STATE::SHUTDOWN);
 }
 
 void SimpleEngine::armEngine(){
     _igniter->arm();
 }
+

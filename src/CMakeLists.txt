@@ -5,8 +5,8 @@
 
 FILE(GLOB_RECURSE app_sources ${CMAKE_SOURCE_DIR}/src/*.*)
 
-file(GLOB_RECURSE engine_sources ${CMAKE_SOURCE_DIR}/src/ApogeeDetection/*.*)
-list(REMOVE_ITEM app_sources ${engine_sources})
+# file(GLOB_RECURSE engine_sources ${CMAKE_SOURCE_DIR}/src/ApogeeDetection/*.*)
+# list(REMOVE_ITEM app_sources ${engine_sources})
 
 
 # message(STATUS "${excluded_sources}")

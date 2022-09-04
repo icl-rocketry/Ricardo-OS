@@ -11,12 +11,12 @@
 
 void Engine::execute(int func){
     switch(func){
-        case 1:
+        case static_cast<uint8_t>(ENGINE_EXECUTE::IGNITE):
         {
             ignite();
             break;
         }
-        case 0:
+        case static_cast<uint8_t>(ENGINE_EXECUTE::SHUTDOWN):
         {
             shutdown();
             break;
@@ -29,11 +29,18 @@ void Engine::execute(int func){
 };
 
 void Engine::ignite(){
-    _logcontroller.log("Engine: " + std::to_string(getID()) + " ignition called!");
+    log("Ignition Called!");
+    getStatePtr()->ignitionTime = millis();
+
 };
 
 void Engine::shutdown(){
-    _logcontroller.log("Engine: " + std::to_string(getID()) + "shutdown called!" );
+    log("Shutdown Called!");
+    getStatePtr()->shutdownTime = millis();
 };
+
+void Engine::log(const std::string message){
+    _logcontroller.log("Engine:" + std::to_string(getID()) + message);
+}
 
 Engine::~Engine(){};

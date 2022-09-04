@@ -1,8 +1,32 @@
 #pragma once
 
-#include <vector> //preamble needed for class
+#include <vector> 
+#include <algorithm>
 #include <array>
 #include <Eigen/Dense>
+
+/**
+ * @brief Simple ringbuf implementation based on std::array
+ * 
+ * @tparam T 
+ * @tparam LEN 
+ */
+template<typename T,size_t LEN>
+class RingBuf : public std::array<T,LEN> {
+    public:
+        /**
+         * @brief rotates the array, inserts a new value at the front and returns the removed value
+         * 
+         * @param val 
+         * @return T 
+         */
+        T pop_push_back(T val){
+            T prevVal = this->back();
+            std::rotate(this->rbegin(),this->rbegin()+1,this->rend()); // shift elements to the right by 1
+            this->at(0) = val;
+            return prevVal;
+        };
+};
 
 struct ApogeeInfo{
     bool reached;
@@ -14,23 +38,45 @@ struct ApogeeInfo{
 class ApogeeDetect
 {
 public:
-    ApogeeDetect();
+/**
+ * @brief Construct a new Apogee Detect object
+ * 
+ * @param sampleTime  in millis
+ */
+    ApogeeDetect(uint16_t sampleTime = 100);
 
     const ApogeeInfo& checkApogee(float altitude, float velocity, uint32_t time);       //create function in the memory address of the structure to estimate the apogee
 
 private:
     // int len_time; // The length of the time
     static constexpr int arrayLen = 5;                  //polyval takes elements 3:5 to approximate the apogee, so 5 elements are required
+    
+    const uint16_t _sampleTime;
+    uint32_t prevCheckApogeeTime{0};
 
-    std::array<uint32_t,arrayLen> time_array;           //create arrays to store recent flight history for apogee approximation
-    std::array<float,arrayLen> altitude_array;
-    std::array<float,arrayLen> velocity_array;
 
-    //std::array<float,3> quad;                            // Stores the polyfit results (3 coefficients)
+    RingBuf<uint32_t,arrayLen> time_array;           //create arrays to store recent flight history for apogee approximation
+    RingBuf<float,arrayLen> altitude_array;
 
-    //function for 2nd degree polynomial approximation:
-    std::array<float,2> Polyval(std::array<uint32_t,arrayLen> time_array, std::array<float,arrayLen> altitude_array);
-    //linear system for polyval (Ax=b)
+
+    /**
+     * @brief Returns the coefficents of a 2nd order fitted polynomial
+     * 
+     * @param time_array 
+     * @param altitude_array 
+     * @return std::array<float,2> 
+     */
+    void quadraticFit(uint32_t oldTime, uint32_t newTime, float oldAlt, float newAlt);
+    //sums for fitting polynomial
+    float sigmaTime;
+    float sigmaTime_2;
+    float sigmaTime_3;
+    float sigmaTime_4;
+    float sigmaAlt;
+    float sigmaAltTime;
+    float sigmaAltTime_2;
+    void updateSigmas(uint32_t oldTime, uint32_t newTime, float oldAlt, float newAlt);
+    
     Eigen::Matrix3f A;
     Eigen::Vector3f b;
     Eigen::Vector3f coeffs;
@@ -38,10 +84,13 @@ private:
 
     uint32_t prevMachLockTime;
     bool mlock;         // Mach lockout activated by default on launch
-    float mlock_speed; // 100ft/s in m/s
+    static constexpr float mlock_speed = 30; //value chosen thru tuning -> depends on filter performance
+    static constexpr int mlock_time = 1000; // lockout time in milliseconds
 
-    float alt_min;   // Minimum altitude (m) before apogee detection algorithm works
+    static constexpr float alt_threshold = 0; //threshold to detect altitude descent
+    static constexpr float alt_min = 100;   // Minimum altitude (m) before apogee detection algorithm works
       
     ApogeeInfo _apogeeinfo;                             //create the structure for ApogeeInfo
 
 };
+
