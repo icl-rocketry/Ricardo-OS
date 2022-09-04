@@ -11,7 +11,7 @@
 #include "Helpers/jsonconfighelper.h"
 
 SimpleEngine::SimpleEngine(uint8_t id,JsonObjectConst engineConfig,addNetworkCallbackFunction_t addNetworkCallbackFunction,RnpNetworkManager& networkmanager,uint8_t handlerServiceID,LogController& logcontroller):
-Engine(id,engineConfig,addNetworkCallbackFunction,networkmanager,handlerServiceID,logcontroller),
+Engine(id,networkmanager,handlerServiceID,logcontroller),
 _state({static_cast<uint8_t>(ENGINE_RUN_STATE::SHUTDOWN),})
 {
     using namespace JsonConfigHelper;

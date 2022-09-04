@@ -61,7 +61,11 @@ public:
      * @param handlerServiceID
      * @param logcontroller
      */
-    Engine(uint8_t id, [[maybe_unused]] JsonObjectConst engineConfig, [[maybe_unused]] addNetworkCallbackFunction_t addNetworkCallbackF, RnpNetworkManager &networkmanager, uint8_t handlerServiceID, LogController &logcontroller) : _id(id),
+    // Engine(uint8_t id, [[maybe_unused]] JsonObjectConst engineConfig, [[maybe_unused]] addNetworkCallbackFunction_t addNetworkCallbackF, RnpNetworkManager &networkmanager, uint8_t handlerServiceID, LogController &logcontroller) : _id(id),
+    //                                                                                                                                                                                                                                   _networkmanager(networkmanager),
+    //                                                                                                                                                                                                                                   _handlerServiceID(handlerServiceID),
+    //                                                                                                                                                                                                                                   _logcontroller(logcontroller){};
+     Engine(uint8_t id,RnpNetworkManager &networkmanager, uint8_t handlerServiceID, LogController &logcontroller) : _id(id),
                                                                                                                                                                                                                                       _networkmanager(networkmanager),
                                                                                                                                                                                                                                       _handlerServiceID(handlerServiceID),
                                                                                                                                                                                                                                       _logcontroller(logcontroller){};

@@ -8,7 +8,7 @@
     {
         "address":9,
         "destination_service":3,
-        "fireDuration":10
+        "fire_duration":10
     },
     "ventValve":
     {
