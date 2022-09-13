@@ -32,7 +32,7 @@ struct HypnosState : public EngineState
 class Hypnos : public Engine
 {
 public:
-    Hypnos(uint8_t id, JsonObjectConst engineConfig, addNetworkCallbackFunction_t addNetworkCallbackF, RnpNetworkManager &networkmanager, uint8_t handlerServiceID, LogController &logcontroller);
+    Hypnos(uint8_t id, JsonObjectConst engineConfig, addNetworkCallbackFunction_t addNetworkCallbackFunction, RnpNetworkManager &networkmanager, uint8_t handlerServiceID, LogController &logcontroller);
 
     void updateState() override;
 
@@ -59,6 +59,7 @@ private:
     std::unique_ptr<NetworkActuator> _igniter;
     // default firing time
     uint16_t _igniterFiringTime = 1000;
+    bool _igniterFired;
 
     std::unique_ptr<NetworkActuator> _oxidiserValve;
     // default positions

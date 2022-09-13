@@ -23,13 +23,14 @@ void Preflight::initialise(){
     RoutingTable flightRouting;
     flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION_GATEWAY,Route{3,1,{}});
     flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION,Route{3,2,{}});
+    flightRouting.setRoute(5,Route{3,2,{}});
     _sm->networkmanager.setRoutingTable(flightRouting);
     _sm->networkmanager.updateBaseTable(); // save the new base table
 
     _sm->networkmanager.setAddress(static_cast<uint8_t>(DEFAULT_ADDRESS::ROCKET));
     
     _sm->networkmanager.enableAutoRouteGen(false);
-    _sm->networkmanager.setNoRouteAction(NOROUTE_ACTION::DUMP,{});
+    _sm->networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST,{1,3});
     
 
     _sm->tunezhandler.play(MelodyLibrary::miichannel,true);

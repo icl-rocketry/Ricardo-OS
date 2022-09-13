@@ -50,6 +50,7 @@ void CanBus::sendPacket(RnpPacket& data){
         return;
     }
     if (_sendBuffer.size() + 1 > _info.maxSendBufferElements){
+
         if (!_systemstatus.flagSet(SYSTEM_FLAG::ERROR_CAN)){
             _systemstatus.newFlag(SYSTEM_FLAG::ERROR_CAN,"Can Send Buffer Overflow!");
         }
@@ -110,11 +111,12 @@ void CanBus::processSendBuffer(){
     can_packet.data_length_code = (bytes_left > 8) ? 8 : bytes_left;
 
     std::memcpy(&can_packet.data,packet.bytedata.data() + offset,can_packet.data_length_code);
-
+    
     int err = can_transmit(&can_packet,0);//non blocking send
     if (err != ESP_OK){
         if (err == ESP_ERR_TIMEOUT || err == ESP_FAIL){
             // can tx buffer full, dont increment seg_id and try to place on buffer next update
+            
             _logcontroller.log("Can tx buffer full");
             return;
         }

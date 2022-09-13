@@ -14,7 +14,7 @@ State(sm,SYSTEM_FLAG::STATE_RECOVERY)
 void Recovery::initialise(){
     State::initialise();
     _sm->tunezhandler.play(MelodyLibrary::zeldatheme,true); // play startup sound
-
+    _sm->enginehandler.shutdownAllEngines();
 };
 
 

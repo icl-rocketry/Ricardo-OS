@@ -1,7 +1,9 @@
 #include "hypnos.h"
 #include "Helpers/jsonconfighelper.h"
 
-Hypnos::Hypnos(uint8_t id, JsonObjectConst engineConfig, addNetworkCallbackFunction_t addNetworkCallbackFunction, RnpNetworkManager &networkmanager, uint8_t handlerServiceID, LogController &logcontroller) : Engine(id, networkmanager, handlerServiceID, logcontroller)
+Hypnos::Hypnos(uint8_t id, JsonObjectConst engineConfig, addNetworkCallbackFunction_t addNetworkCallbackFunction, RnpNetworkManager &networkmanager, uint8_t handlerServiceID, LogController &logcontroller) : 
+Engine(id, networkmanager, handlerServiceID, logcontroller),
+_igniterFired(false)
 {
     using namespace JsonConfigHelper;
     //setup components from config
@@ -19,7 +21,7 @@ Hypnos::Hypnos(uint8_t id, JsonObjectConst engineConfig, addNetworkCallbackFunct
     addComponentNetworkCallback(_igniter.get(),igniterConf,addNetworkCallbackFunction);
 
     auto oxidiserValveConf = getIfContains<JsonObjectConst>(engineConfig, "oxidiserValve");
-    _oxidiserValve = std::make_unique<NetworkActuator>(0,
+    _oxidiserValve = std::make_unique<NetworkActuator>(1,
                                                  getIfContains<uint8_t>(oxidiserValveConf, "address"),
                                                  handlerServiceID,
                                                  getIfContains<uint8_t>(oxidiserValveConf, "destination_service"),
@@ -33,7 +35,7 @@ Hypnos::Hypnos(uint8_t id, JsonObjectConst engineConfig, addNetworkCallbackFunct
     addComponentNetworkCallback(_oxidiserValve.get(),oxidiserValveConf,addNetworkCallbackFunction);
 
     auto ventValveConf = getIfContains<JsonObjectConst>(engineConfig, "ventValve");
-    _ventValve = std::make_unique<NetworkActuator>(0,
+    _ventValve = std::make_unique<NetworkActuator>(2,
                                                  getIfContains<uint8_t>(ventValveConf, "address"),
                                                  handlerServiceID,
                                                  getIfContains<uint8_t>(ventValveConf, "destination_service"),
@@ -48,7 +50,7 @@ Hypnos::Hypnos(uint8_t id, JsonObjectConst engineConfig, addNetworkCallbackFunct
     //SENSOR SETUP
 
     auto chamberPressureConf = getIfContains<JsonObjectConst>(engineConfig, "chamberPressure");
-    _chamberPressure = std::make_unique<NetworkSensor>(0,
+    _chamberPressure = std::make_unique<NetworkSensor>(3,
                                                  getIfContains<uint8_t>(chamberPressureConf, "address"),
                                                  handlerServiceID,
                                                  getIfContains<uint8_t>(chamberPressureConf, "destination_service"),
@@ -58,14 +60,14 @@ Hypnos::Hypnos(uint8_t id, JsonObjectConst engineConfig, addNetworkCallbackFunct
     addComponentNetworkCallback(_chamberPressure.get(),chamberPressureConf,addNetworkCallbackFunction);
 
     auto tankPressureConf = getIfContains<JsonObjectConst>(engineConfig, "tankPressure");
-    _chamberPressure = std::make_unique<NetworkSensor>(0,
+    _tankPressure = std::make_unique<NetworkSensor>(4,
                                                  getIfContains<uint8_t>(tankPressureConf, "address"),
                                                  handlerServiceID,
                                                  getIfContains<uint8_t>(tankPressureConf, "destination_service"),
                                                  _networkmanager,
                                                  _logcontroller.getLogCB());
                                                  
-    addComponentNetworkCallback(_chamberPressure.get(),tankPressureConf,addNetworkCallbackFunction);
+    addComponentNetworkCallback(_tankPressure.get(),tankPressureConf,addNetworkCallbackFunction);
 
 
 }
@@ -126,9 +128,10 @@ void Hypnos::update(){
     heartbeat();
 
     if (_state.runState == static_cast<uint8_t>(ENGINE_RUN_STATE::IGNITION)){//if we are still in ignition phase
-        if (millis() - _state.ignitionTime > _preIgnitionDelay){ // ignite igniter
+        if ((millis() - _state.ignitionTime > _preIgnitionDelay ) && (!_igniterFired)){ // ignite igniter
             log("firing igniter");
             _igniter->execute(_igniterFiringTime);
+            _igniterFired = true;
         }else if (millis() - _state.ignitionTime > _postIgnitionDelay+_preIgnitionDelay){
             log("oxidiser valve to fully open");
             _oxidiserValve->execute(_oxidiserValveOpen);
@@ -158,6 +161,7 @@ void Hypnos::updateSensors()
         }else{
             if (!_chamberPressureTimeout){
                 log("Chamber Pressure Timeout!");
+                _chamberPressureTimeout = true;
             }
             // component timed out -> maybe timeout detection should be in the component rather than here
         }
@@ -170,8 +174,10 @@ void Hypnos::updateSensors()
             // component timed out 
             if (!_tankPressureTimeout){
                 log("Tank Pressure Timeout!");
+                _tankPressureTimeout = true;
             }
         }
+        _prevSensorUpdateTime = millis();
     } 
 
 }
@@ -185,10 +191,12 @@ void Hypnos::heartbeat()
 uint8_t Hypnos::flightCheck()
 {
     uint8_t res = 0;
+
     res += _igniter->flightCheck(_networkRetryInterval,_componentStateExpiry,"Engine:" + std::to_string(getID()));
     res += _oxidiserValve->flightCheck(_networkRetryInterval,_componentStateExpiry,"Engine:" + std::to_string(getID()));
     res += _ventValve->flightCheck(_networkRetryInterval,_componentStateExpiry,"Engine:" + std::to_string(getID()));
     res += _chamberPressure->flightCheck(_networkRetryInterval,_componentStateExpiry,"Engine:" + std::to_string(getID()));
     res += _tankPressure->flightCheck(_networkRetryInterval,_componentStateExpiry,"Engine:" + std::to_string(getID()));
+    
     return res;
 }

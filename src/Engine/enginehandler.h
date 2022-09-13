@@ -27,6 +27,8 @@ class EngineHandler : public FlightComponentHandler<Engine,EngineHandler>{
 
         void update(); // calls update on all engines
 
+        void shutdownAllEngines();
+
     protected:
         friend class ConfigurableDynamicHandler;
         void setupIndividual_impl(size_t id,JsonObjectConst engineconfig);

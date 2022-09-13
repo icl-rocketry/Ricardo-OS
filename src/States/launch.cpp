@@ -18,8 +18,10 @@ void Launch::initialise(){
     _sm->tunezhandler.play(MelodyLibrary::confirmation);
 
     //arm deployers and engines
+
     _sm->deploymenthandler.armComponents();
     _sm->enginehandler.armComponents();
+ 
 
 };
 
@@ -30,8 +32,9 @@ State* Launch::update(){
     //perform flight check
     int deployers_in_error = _sm->deploymenthandler.flightCheck();
     int engines_in_error = _sm->enginehandler.flightCheck();
+    _sm->enginehandler.update();
 
-    if ((deployers_in_error == 0) && (engines_in_error == 0)){
+    if ((deployers_in_error == 0) && (engines_in_error == 0) && _sm->systemstatus.flagSet(SYSTEM_FLAG::ERROR_FLIGHTCHECK)){
         _sm->systemstatus.deleteFlag(SYSTEM_FLAG::ERROR_FLIGHTCHECK);
     }else{
         if(!_sm->systemstatus.flagSet(SYSTEM_FLAG::ERROR_FLIGHTCHECK)){

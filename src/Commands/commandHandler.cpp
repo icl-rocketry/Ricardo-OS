@@ -415,7 +415,8 @@ void CommandHandler::CalibrateBaroCommand(const RnpPacketSerialized& packet)
 
 void CommandHandler::IgnitionCommand(const RnpPacketSerialized& packet)
 {
-	if(_sm->systemstatus.flagSet(SYSTEM_FLAG::STATE_LAUNCH) && !_sm->systemstatus.flagSet(SYSTEM_FLAG::ERROR_FLIGHTCHECK))
+	// if(_sm->systemstatus.flagSet(SYSTEM_FLAG::STATE_LAUNCH) && !_sm->systemstatus.flagSet(SYSTEM_FLAG::ERROR_FLIGHTCHECK))
+	if(_sm->systemstatus.flagSet(SYSTEM_FLAG::STATE_LAUNCH))
 	{
 		uint32_t currentTime = millis();
 		_sm->estimator.setIgnitionTime(currentTime); // set igintion time

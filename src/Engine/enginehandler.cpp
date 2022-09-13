@@ -38,6 +38,12 @@ void EngineHandler::armComponents_impl(){
     }
 }
 
+void EngineHandler::shutdownAllEngines(){
+    for (auto& engine: *this){
+        engine->execute(0);
+    }
+}
+
 
 void EngineHandler::setupIndividual_impl(size_t id, JsonObjectConst engineconfig){
     using namespace JsonConfigHelper;
