@@ -42,7 +42,8 @@ State* Launch::update(){
         }
     }
 
-    if (!_sm->systemstatus.flagSet(SYSTEM_FLAG::ERROR_FLIGHTCHECK) && abs(_sm->estimator.getData().acceleration(2)) > 1.5){ // launch acceleration threshold comparison of down acceleration with a threshold of 1.5 g idk if this is okay lol?
+    // if (!_sm->systemstatus.flagSet(SYSTEM_FLAG::ERROR_FLIGHTCHECK) && _sm->estimator.getData().acceleration(2) < -1){ // launch acceleration threshold comparison of down acceleration with a threshold of 1.5 g idk if this is okay lol?
+    if (_sm->estimator.getData().acceleration(2) < -1){ // launch acceleration threshold comparison of down acceleration with a threshold of 1.5 g idk if this is okay lol?
         _sm->estimator.setLiftoffTime(millis());
         State* flight_ptr = new Flight(_sm);
         return flight_ptr;

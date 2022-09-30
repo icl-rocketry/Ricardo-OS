@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <Eigen/Dense>
+#include <Storage/logController.h>
 
 /**
  * @brief Simple ringbuf implementation based on std::array
@@ -43,16 +44,18 @@ public:
  * 
  * @param sampleTime  in millis
  */
-    ApogeeDetect(uint16_t sampleTime = 100);
+    ApogeeDetect(uint16_t sampleTime,LogController& logcontroller);
 
     const ApogeeInfo& checkApogee(float altitude, float velocity, uint32_t time);       //create function in the memory address of the structure to estimate the apogee
 
 private:
+    LogController& _logcontroller;
     // int len_time; // The length of the time
     static constexpr int arrayLen = 5;                  //polyval takes elements 3:5 to approximate the apogee, so 5 elements are required
     
     const uint16_t _sampleTime;
     uint32_t prevCheckApogeeTime{0};
+    uint32_t initialEntryTime{0};
 
 
     RingBuf<uint32_t,arrayLen> time_array;           //create arrays to store recent flight history for apogee approximation
@@ -66,7 +69,7 @@ private:
      * @param altitude_array 
      * @return std::array<float,2> 
      */
-    void quadraticFit(uint32_t oldTime, uint32_t newTime, float oldAlt, float newAlt);
+    void quadraticFit(float oldTime, float newTime, float oldAlt, float newAlt);
     //sums for fitting polynomial
     float sigmaTime;
     float sigmaTime_2;
@@ -75,7 +78,7 @@ private:
     float sigmaAlt;
     float sigmaAltTime;
     float sigmaAltTime_2;
-    void updateSigmas(uint32_t oldTime, uint32_t newTime, float oldAlt, float newAlt);
+    void updateSigmas(float oldTime, float newTime, float oldAlt, float newAlt);
     
     Eigen::Matrix3f A;
     Eigen::Vector3f b;

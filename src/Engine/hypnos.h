@@ -65,7 +65,7 @@ private:
     // default positions
     uint16_t _oxidiserValveClosed = 0;
     uint16_t _oxidiserValveOpen = 180;
-    uint16_t _oxidiserValvePreIgnition = 115;
+    uint16_t _oxidiserValvePreIgnition = 55;
 
     std::unique_ptr<NetworkActuator> _ventValve;
     // default positions
@@ -80,8 +80,8 @@ private:
     bool _tankPressureTimeout;
 
     // ignition parameters
-    static constexpr uint16_t _preIgnitionDelay = 500;
-    static constexpr uint16_t _postIgnitionDelay = 700;
+    static constexpr uint16_t _preIgnitionDelay = 300;
+    static constexpr uint16_t _postIgnitionDelay = 500;
     static constexpr uint16_t _throttleLockout = 4000;
 
     void ignite() override;

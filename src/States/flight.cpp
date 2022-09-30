@@ -4,12 +4,12 @@
 
 #include "flags.h"
 #include "stateMachine.h"
+#include "ApogeeDetection/apogeedetect.h"
 
 
 Flight::Flight(stateMachine* sm):
 State(sm,SYSTEM_FLAG::STATE_FLIGHT),
-altitudeHistory({0,0,0}),
-apogeeDelta(0.05)
+apogeedetect(100,_sm->logcontroller)
 {};
 
 void Flight::initialise(){
@@ -32,12 +32,13 @@ State* Flight::update(){
         _sm->systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_COAST,"Entered Coast Phase");
         _sm->systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_BOOST);
     }
-    
-    if (apogeeDetect()){
+    ApogeeInfo apogeeinfo = apogeedetect.checkApogee(_sm->estimator.getData().position(2),_sm->estimator.getData().velocity(2),millis());
+    if (apogeeinfo.reached){
         _sm->systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_COAST);
         _sm->systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_BOOST);
         _sm->systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_APOGEE,"Apogee Detected!!");
-        _sm->estimator.setApogeeTime(millis());
+        _sm->estimator.setApogeeTime(apogeeinfo.time);
+        _sm->logcontroller.log("Apogee at " + std::to_string(apogeeinfo.altitude));
         State* recovery_ptr = new Recovery(_sm);
         return recovery_ptr;
     }else{
@@ -49,19 +50,19 @@ void Flight::exitstate(){
     State::exitstate();
 };
 
-bool Flight::apogeeDetect(){ // 20hz
+// bool Flight::apogeeDetect(){ // 20hz
 
-    if (millis() - prevApogeeDetectTime >= apogeeDelta){
-        prevApogeeDetectTime = millis();
-        altitudeHistory.at(0) = altitudeHistory.at(1);
-        altitudeHistory.at(1) = altitudeHistory.at(2);
-        altitudeHistory.at(2) = _sm->sensors.getData().baro.alt;
+//     if (millis() - prevApogeeDetectTime >= apogeeDelta){
+//         prevApogeeDetectTime = millis();
+//         altitudeHistory.at(0) = altitudeHistory.at(1);
+//         altitudeHistory.at(1) = altitudeHistory.at(2);
+//         altitudeHistory.at(2) = _sm->sensors.getData().baro.alt;
 
-        if ( (altitudeHistory.at(2) < altitudeHistory.at(1)) && (altitudeHistory.at(1) < altitudeHistory.at(0)) && abs(altitudeHistory.at(2) - altitudeHistory.at(0)) > 2){
-            return true;
-        }
-    }
+//         if ( (altitudeHistory.at(2) < altitudeHistory.at(1)) && (altitudeHistory.at(1) < altitudeHistory.at(0)) && abs(altitudeHistory.at(2) - altitudeHistory.at(0)) > 2){
+//             return true;
+//         }
+//     }
 
 
-    return false;
-}
+//     return false;
+// }
