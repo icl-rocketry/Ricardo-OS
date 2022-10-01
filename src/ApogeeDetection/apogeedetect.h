@@ -45,7 +45,14 @@ public:
  * @param sampleTime  in millis
  */
     ApogeeDetect(uint16_t sampleTime,LogController& logcontroller);
-
+    /**
+     * @brief 
+     * 
+     * @param altitude expects up + be careful!
+     * @param velocity 
+     * @param time 
+     * @return const ApogeeInfo& 
+     */
     const ApogeeInfo& checkApogee(float altitude, float velocity, uint32_t time);       //create function in the memory address of the structure to estimate the apogee
 
 private:

@@ -58,7 +58,7 @@ const ApogeeInfo &ApogeeDetect::checkApogee(float altitude, float velocity, uint
         if (!(_apogeeinfo.reached) && (altitude > alt_min) && !mlock)
         {
             // coeffs = poly2fit(time_array, altitude_array); // POLYFIT -> x(t), time in ms
-            quadraticFit(prevTime/1000, timeSinceEntry/1000, prevAltitude, altitude);
+            quadraticFit((float)prevTime/1000.0, (float)timeSinceEntry/1000.0, prevAltitude, altitude);
 
             _apogeeinfo.time = ((-coeffs(1) / (2 * coeffs(2)))*1000)+initialEntryTime; // maximum from polyinomial using derivative
             _logcontroller.log(std::to_string(_apogeeinfo.time));
@@ -69,6 +69,7 @@ const ApogeeInfo &ApogeeDetect::checkApogee(float altitude, float velocity, uint
                 _apogeeinfo.altitude = coeffs(0) - (std::pow(coeffs(1), 2) / (4 * coeffs(2)));
                 _logcontroller.log("predicted apogee" + std::to_string(_apogeeinfo.time));
                 // coeffs(2) * std::pow(_apogeeinfo.time,2) + (coeffs(1) * _apogeeinfo.time) + coeffs(0); // evalute 2nd order polynomial
+                _logcontroller.log(std::to_string(altitude - _apogeeinfo.altitude));
                 if ((altitude - _apogeeinfo.altitude) < alt_threshold) // if we have passed apogee and now decending, could put a bound on here too
                 {
                     _apogeeinfo.reached = true;
@@ -101,8 +102,17 @@ void ApogeeDetect::quadraticFit(float oldTime, float newTime, float oldAlt, floa
     A << float(arrayLen), sigmaTime, sigmaTime_2,
         sigmaTime, sigmaTime_2, sigmaTime_3,
         sigmaTime_2, sigmaTime_3, sigmaTime_4;
+    
+    std::stringstream a;
+    a<<A;
+    _logcontroller.log(a.str());
+
 
     b << sigmaAlt, sigmaAltTime, sigmaAltTime_2;
+
+    std::stringstream b_str;
+    b_str<<b;
+    _logcontroller.log(b_str.str());
     // solve the system for the coefficents -> if this is too slow, look into using LLT cholesky decomp
-    coeffs = A.householderQr().solve(b);
+    coeffs = A.colPivHouseholderQr().solve(b);
 }
