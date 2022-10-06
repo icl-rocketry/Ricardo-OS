@@ -167,7 +167,8 @@ private:
 
     // BARO MEASUREMENT
 
-    static constexpr float baroVariance = 0.5;
+    // static constexpr float baroVariance = 0.5;
+    static constexpr float baroVariance = 5;
     const Eigen::Matrix<float, 1, 9> H_BARO{{0, 0, 0, 0, 0, 0, -1, 0, 0}};
 
     // GPS MEASUREMENT
@@ -177,13 +178,15 @@ private:
      * @brief Gps position variance given by the CEP ~ 2.5m
      *
      */
-    static constexpr float gpsPositionVariance = 2.123;
+    // static constexpr float gpsPositionVariance = 2.123;
+    static constexpr float gpsPositionVariance = .2;
     /**
      * @brief Gps Altitude variance differs from horizontal variance but for now assume its the same.
      * This is in m
      *
      */
-    static constexpr float gpsAltitudeVariance = 2.123;
+    // static constexpr float gpsAltitudeVariance = 2.123;
+    static constexpr float gpsAltitudeVariance = .1;
     /**
      * @brief Gps velocity variance given as +- 0.05ms-1 @ 50%
      *

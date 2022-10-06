@@ -55,7 +55,7 @@ const ApogeeInfo &ApogeeDetect::checkApogee(float altitude, float velocity, uint
 
         // Apogee detection:
 
-        if (!(_apogeeinfo.reached) && (altitude > alt_min) && !mlock)
+        if (!(_apogeeinfo.reached))
         {
             // coeffs = poly2fit(time_array, altitude_array); // POLYFIT -> x(t), time in ms
             quadraticFit((float)prevTime/1000.0, (float)timeSinceEntry/1000.0, prevAltitude, altitude);
@@ -64,7 +64,7 @@ const ApogeeInfo &ApogeeDetect::checkApogee(float altitude, float velocity, uint
             _logcontroller.log(std::to_string(_apogeeinfo.time));
             _logcontroller.log("coeffs: " + std::to_string(coeffs(0)) + " " + std::to_string(coeffs(1)) + " " + std::to_string(coeffs(2)));
 
-            if ((millis() >= _apogeeinfo.time) && (coeffs(2) < 0) && (millis() > 0))
+            if ((millis() >= _apogeeinfo.time) && (coeffs(2) < 0) && (millis() > 0) && (altitude > alt_min) && !mlock)
             {
                 _apogeeinfo.altitude = coeffs(0) - (std::pow(coeffs(1), 2) / (4 * coeffs(2)));
                 _logcontroller.log("predicted apogee" + std::to_string(_apogeeinfo.time));
@@ -85,13 +85,29 @@ const ApogeeInfo &ApogeeDetect::checkApogee(float altitude, float velocity, uint
 
 void ApogeeDetect::updateSigmas(float oldTime, float newTime, float oldAlt, float newAlt)
 {
-    sigmaTime += float(newTime - oldTime);
-    sigmaTime_2 += (std::pow(float(newTime), 2) - std::pow(float(oldTime), 2));
-    sigmaTime_3 += (std::pow(float(newTime), 3) - std::pow(float(oldTime), 3));
-    sigmaTime_4 += (std::pow(float(newTime), 4) - std::pow(float(oldTime), 4));
+    float newTime_2 = newTime*newTime;
+    float newTime_3 = newTime_2*newTime;
+    float newTime_4 = newTime_3*newTime;
+    float oldTime_2 = oldTime*oldTime;
+    float oldTime_3 = oldTime_2*oldTime;
+    float oldTime_4 = oldTime_3*oldTime;
+
+
+    sigmaTime += (newTime - oldTime);
+    // sigmaTime_2 += (std::pow((newTime), 2) - std::pow((oldTime), 2));
+    // sigmaTime_3 += (std::pow((newTime), 3) - std::pow((oldTime), 3));
+    // sigmaTime_4 += (std::pow((newTime), 4) - std::pow((oldTime), 4));
+
+    sigmaTime_2 += newTime_2 - oldTime_2;
+    sigmaTime_3 += newTime_3 - oldTime_3;
+    sigmaTime_4 += newTime_4 - oldTime_4;
+
     sigmaAlt += (newAlt - oldAlt);
-    sigmaAltTime += ((newAlt * float(newTime)) - (oldAlt * float(oldTime)));
-    sigmaAltTime_2 += ((newAlt * std::pow((float)newTime, 2)) - (oldAlt * std::pow((float)oldTime, 2)));
+
+    // sigmaAltTime += ((newAlt * (newTime)) - (oldAlt * (oldTime)));
+    // sigmaAltTime_2 += ((newAlt * std::pow(newTime, 2)) - (oldAlt * std::pow(oldTime, 2)));
+    sigmaAltTime += ((newAlt * (newTime)) - (oldAlt * (oldTime)));
+    sigmaAltTime_2 += ((newAlt * newTime_2) - (oldAlt * oldTime_2));
 };
 
 /*Create a matrix, three simulatneos equations */

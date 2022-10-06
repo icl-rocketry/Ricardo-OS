@@ -9,7 +9,7 @@
 
 Flight::Flight(stateMachine* sm):
 State(sm,SYSTEM_FLAG::STATE_FLIGHT),
-apogeedetect(100,_sm->logcontroller)
+apogeedetect(200,_sm->logcontroller)
 {};
 
 void Flight::initialise(){

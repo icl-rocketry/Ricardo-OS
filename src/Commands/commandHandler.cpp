@@ -171,10 +171,6 @@ void CommandHandler::ResetCommand(const RnpPacketSerialized& packet)
 		return;
 	}
 	
-	_sm->estimator.setApogeeTime(0);
-	_sm->estimator.setIgnitionTime(0);
-	_sm->estimator.setLiftoffTime(0);
-	// _sm->initialise(new Preflight(_sm)); // reboot the whole system
 	ESP.restart(); 
 
 }

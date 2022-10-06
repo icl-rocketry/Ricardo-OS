@@ -15,16 +15,18 @@
 #include "rnp_interface.h"
 #include "rnp_packet.h"
 
-Radio::Radio(SPIClass& spi, SystemStatus& systemstatus,LogController& logcontroller,uint8_t id ,std::string name):
+Radio::Radio(SPIClass& spi, SystemStatus& systemstatus,LogController& logcontroller,RADIO_MODE mode,uint8_t id,std::string name):
 RnpInterface(id,name),
 _spi(spi),
 _systemstatus(systemstatus),
 _logcontroller(logcontroller),
 _currentSendBufferSize(0),
-_txDone(true)
+_txDone(true),
+_received(true)
 {
     _info.MTU = 256;
     _info.sendBufferSize = 2048;
+    _info.mode=mode;
 };
 
 
@@ -102,6 +104,8 @@ void Radio::getPacket(){
         //update source interface
         packet_ptr->header.src_iface = getID();
         _packetBuffer->push(std::move(packet_ptr));//add packet ptr  to buffer
+        _received=true;
+        _logcontroller.log("received");
 
     }
 }
@@ -111,12 +115,37 @@ void Radio::checkSendBuffer(){
         return; // exit if nothing in the buffer
     }
     
-    // check if radio is busy, if it isnt then send next packet
+    switch(_info.mode)
+    {
+        case(RADIO_MODE::SIMPLE):
+        {
+            sendFromBuffer();
+            break;
+        }
+        case(RADIO_MODE::TURN_TIMEOUT):
+        {
+            if (_received || (millis()-_info.prevTimeSent > turnTimeout)){
+                sendFromBuffer();
+            }
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
+   
+}
+
+void Radio::sendFromBuffer()
+{
+     // check if radio is busy, if it isnt then send next packet
     size_t bytes_written = send(_sendBuffer.front());
     if (bytes_written){ // if we succesfully send packet
         _sendBuffer.pop(); //remove packet from buffer
         _currentSendBufferSize -= bytes_written;
     }
+
 }
 
 size_t Radio::send(std::vector<uint8_t> &data){
@@ -124,6 +153,8 @@ size_t Radio::send(std::vector<uint8_t> &data){
         LoRa.write(data.data(), data.size());
         LoRa.endPacket(true); // asynchronous send 
         _txDone = false;
+        _info.prevTimeSent = millis();
+        _received = false; // used for turn_timeout mode
         return data.size();
     }else{
         return 0;

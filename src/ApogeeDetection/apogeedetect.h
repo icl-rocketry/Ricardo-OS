@@ -85,8 +85,13 @@ private:
     float sigmaAlt;
     float sigmaAltTime;
     float sigmaAltTime_2;
+
     void updateSigmas(float oldTime, float newTime, float oldAlt, float newAlt);
     
+    // Eigen::Matrix3d A;
+    // Eigen::Vector3d b;
+    // Eigen::Vector3d coeffs;
+
     Eigen::Matrix3f A;
     Eigen::Vector3f b;
     Eigen::Vector3f coeffs;

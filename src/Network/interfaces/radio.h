@@ -13,11 +13,19 @@
 
 #include "rnp_interface.h"
 #include "rnp_packet.h"
-//class for lora type devices
 
+
+
+enum class RADIO_MODE:uint8_t{
+            SIMPLE,
+            TURN_TIMEOUT
+};
 struct RadioInterfaceInfo:public RnpInterfaceInfo{
     size_t sendBufferSize;
     bool sendBufferOverflow;
+
+    RADIO_MODE mode;
+    uint32_t prevTimeSent;
 
     int rssi;
     float snr;
@@ -27,7 +35,10 @@ struct RadioInterfaceInfo:public RnpInterfaceInfo{
 
 class Radio: public RnpInterface{
     public:
-        Radio(SPIClass& spi, SystemStatus& systemstatus,LogController& logcontroller,uint8_t id=2,std::string name="Radio");
+
+        
+
+        Radio(SPIClass& spi, SystemStatus& systemstatus,LogController& logcontroller,RADIO_MODE mode=RADIO_MODE::SIMPLE,uint8_t id=2,std::string name="Radio");
         void setup() override;
 
         void sendPacket(RnpPacket& data) override;
@@ -55,6 +66,10 @@ class Radio: public RnpInterface{
         void checkSendBuffer();
         size_t send(std::vector<uint8_t> &data);
         void checkTx();
+        void sendFromBuffer();
+
+        static constexpr int turnTimeout = 250;
+        bool _received;
         
   
 };
