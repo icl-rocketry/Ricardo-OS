@@ -63,7 +63,8 @@ stateMachine::stateMachine() :
     deploymenthandler(networkmanager,deploymentHandlerServiceID,I2C,logcontroller),
     enginehandler(networkmanager,engineHandlerServiceID,logcontroller),
     controllerhandler(enginehandler,logcontroller),
-    eventhandler(enginehandler,deploymenthandler,logcontroller)
+    eventhandler(enginehandler,deploymenthandler,logcontroller),
+    apogeedetect(200,logcontroller)
 {};
 
 

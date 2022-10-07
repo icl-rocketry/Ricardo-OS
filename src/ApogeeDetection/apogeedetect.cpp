@@ -108,6 +108,8 @@ void ApogeeDetect::updateSigmas(float oldTime, float newTime, float oldAlt, floa
     // sigmaAltTime_2 += ((newAlt * std::pow(newTime, 2)) - (oldAlt * std::pow(oldTime, 2)));
     sigmaAltTime += ((newAlt * (newTime)) - (oldAlt * (oldTime)));
     sigmaAltTime_2 += ((newAlt * newTime_2) - (oldAlt * oldTime_2));
+
+    _logcontroller.log(std::to_string(sigmaTime) + "\t" + std::to_string(sigmaTime) + "\t" + std::to_string(sigmaTime_2) + "\t" + std::to_string(sigmaTime_3) + "\t" + std::to_string(sigmaTime_4) + "\t" + std::to_string(sigmaAlt) + "\t" +std::to_string(sigmaAltTime) + "\t" + std::to_string(sigmaAltTime_2) + "\t" );
 };
 
 /*Create a matrix, three simulatneos equations */

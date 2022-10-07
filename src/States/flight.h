@@ -24,7 +24,7 @@ class Flight: public State {
     // bool apogeeDetect();
     // uint32_t prevApogeeDetectTime;
     // const uint16_t apogeeDelta;
-    ApogeeDetect apogeedetect;
+    // ApogeeDetect apogeedetect;
 };
 
 

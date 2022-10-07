@@ -8,8 +8,8 @@
 
 
 Flight::Flight(stateMachine* sm):
-State(sm,SYSTEM_FLAG::STATE_FLIGHT),
-apogeedetect(200,_sm->logcontroller)
+State(sm,SYSTEM_FLAG::STATE_FLIGHT)
+// apogeedetect(200,_sm->logcontroller)
 {};
 
 void Flight::initialise(){
@@ -32,7 +32,7 @@ State* Flight::update(){
         _sm->systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_COAST,"Entered Coast Phase");
         _sm->systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_BOOST);
     }
-    ApogeeInfo apogeeinfo = apogeedetect.checkApogee(-_sm->estimator.getData().position(2),_sm->estimator.getData().velocity(2),millis());
+    ApogeeInfo apogeeinfo = _sm->apogeedetect.checkApogee(-_sm->estimator.getData().position(2),_sm->estimator.getData().velocity(2),millis());
     if (apogeeinfo.reached){
         _sm->systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_COAST);
         _sm->systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_BOOST);

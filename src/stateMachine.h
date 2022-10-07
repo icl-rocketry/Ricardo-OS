@@ -40,6 +40,8 @@ Written by the Electronics team, Imperial College London Rocketry
 #include "SPI.h"
 #include "Wire.h"
 
+#include "ApogeeDetection/apogeedetect.h"
+
 
 
 
@@ -79,6 +81,7 @@ class stateMachine {
     ControllerHandler controllerhandler;
     EventHandler eventhandler;
 
+    ApogeeDetect apogeedetect;
     
     TunezHandler tunezhandler;
   private:

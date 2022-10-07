@@ -105,7 +105,6 @@ void Radio::getPacket(){
         packet_ptr->header.src_iface = getID();
         _packetBuffer->push(std::move(packet_ptr));//add packet ptr  to buffer
         _received=true;
-        _logcontroller.log("received");
 
     }
 }
