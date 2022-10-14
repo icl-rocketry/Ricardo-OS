@@ -3,7 +3,9 @@
 
 Hypnos::Hypnos(uint8_t id, JsonObjectConst engineConfig, addNetworkCallbackFunction_t addNetworkCallbackFunction, RnpNetworkManager &networkmanager, uint8_t handlerServiceID, LogController &logcontroller) : 
 Engine(id, networkmanager, handlerServiceID, logcontroller),
-_igniterFired(false)
+_igniterFired(false),
+motor_lockout(true),
+shutdown_called(false)
 {
     using namespace JsonConfigHelper;
     //setup components from config
@@ -109,6 +111,11 @@ void Hypnos::armEngine(){
 };
 
 void Hypnos::shutdown(){
+    shutdown_called=true;
+    if (motor_lockout){
+        log("shutdown called during motor lockout");
+        return;
+    }
     Engine::shutdown();
     _oxidiserValve->execute(_oxidiserValveClosed); // close main ox valve
     _state.runState = static_cast<uint8_t>(ENGINE_RUN_STATE::SHUTDOWN);
@@ -136,6 +143,13 @@ void Hypnos::update(){
             log("oxidiser valve to fully open");
             _oxidiserValve->execute(_oxidiserValveOpen);
             _state.runState = static_cast<uint8_t>(ENGINE_RUN_STATE::RUNNING);
+        }
+    }
+
+    if ((millis()-_state.ignitionTime > 10000) && motor_lockout == true){
+        motor_lockout=false;
+        if (shutdown_called){
+            shutdown();
         }
     }
 

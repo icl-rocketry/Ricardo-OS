@@ -84,6 +84,9 @@ private:
     static constexpr uint16_t _postIgnitionDelay = 500;
     static constexpr uint16_t _throttleLockout = 4000;
 
+    bool motor_lockout;
+    bool shutdown_called;
+
     void ignite() override;
     void shutdown() override;
     void vent(); // fully vent main ox tank 
