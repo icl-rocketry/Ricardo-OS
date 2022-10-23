@@ -118,6 +118,7 @@ void Hypnos::shutdown(){
     }
     Engine::shutdown();
     _oxidiserValve->execute(_oxidiserValveClosed); // close main ox valve
+    _ventValve->execute(_ventValveOpen);
     _state.runState = static_cast<uint8_t>(ENGINE_RUN_STATE::SHUTDOWN);
 }
 
