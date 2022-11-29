@@ -33,120 +33,155 @@
 #include "Sensors/mmc5983ma.h"
 #include "Sensors/sensorStructs.h"
 
-
 CommandHandler::CommandHandler(stateMachine* sm):
-_sm(sm)
+_sm(sm),
+_handlers{
+	{COMMANDS::Launch, LaunchCommand},
+	{COMMANDS::Reset, ResetCommand},
+	{COMMANDS::Abort, AbortCommand},
+	{COMMANDS::Set_Home, SetHomeCommand},
+	{COMMANDS::Start_Logging, StartLoggingCommand},
+	{COMMANDS::Stop_Logging, StopLoggingCommand},
+	{COMMANDS::Telemetry, TelemetryCommand},
+	{COMMANDS::Clear_Flash, ClearFlashCommand},
+	{COMMANDS::Clear_SD, ClearSDCommand},
+	{COMMANDS::Play_Song, PlaySongCommand},
+	{COMMANDS::Skip_Song, SkipSongCommand},
+	{COMMANDS::Clear_Song_Queue, ClearSongQueueCommand},
+	{COMMANDS::Calibrate_AccelGyro_Bias, CalibrateAccelGyroBiasCommand},
+	{COMMANDS::Calibrate_Mag_Full, CalibrateMagFullCommand},
+	{COMMANDS::Calibrate_Baro, CalibrateBaroCommand},
+	{COMMANDS::Ignition, IgnitionCommand},
+	{COMMANDS::Set_Beta, SetBetaCommand},
+	{COMMANDS::Reset_Orientation, ResetOrientationCommand},
+	{COMMANDS::Reset_Localization, ResetLocalizationCommand},
+	{COMMANDS::Enter_Debug, EnterDebugCommand},
+	{COMMANDS::Enter_Preflight, EnterPreflightCommand},
+	{COMMANDS::Enter_Countdown, EnterCountdownCommand},
+	{COMMANDS::Enter_Flight, EnterFlightCommand},
+	{COMMANDS::Enter_Recovery, EnterRecoveryCommand},
+	{COMMANDS::Exit_Debug, ExitDebugCommand},
+	{COMMANDS::Exit_to_Debug, ExitDebugCommand},
+	{COMMANDS::Set_Throttle, SetThrottleCommand},
+	{COMMANDS::Engine_Info, EngineInfoCommand},
+	{COMMANDS::Pyro_info, PyroInfoCommand},
+	{COMMANDS::Fire_pyro, FireInfoCommand},
+	{COMMANDS::Free_Ram, FreeRamCommand}
+}
 {};
 
 void CommandHandler::handleCommand(std::unique_ptr<RnpPacketSerialized> packetptr) {
+	COMMANDS cmd = static_cast<COMMANDS>(CommandPacket::getCommand(*packetptr));
+	if (_enabled.test(cmd)) {
+		_handlers[cmd](*packetptr);
+	}
 
-
-	switch (static_cast<COMMANDS>(CommandPacket::getCommand(*packetptr))) {
-		case COMMANDS::Launch:
-			LaunchCommand(*packetptr);
-			break;
-		case COMMANDS::Reset:
-			ResetCommand(*packetptr);
-			break;
-		case COMMANDS::Abort:
-			AbortCommand(*packetptr);
-			break;
-		case COMMANDS::Set_Home:
-			SetHomeCommand(*packetptr);
-			break;
-		case COMMANDS::Start_Logging:
-			StartLoggingCommand(*packetptr);
-			break;
-		case COMMANDS::Stop_Logging:
-			StopLoggingCommand(*packetptr);
-			break;
-		case COMMANDS::Telemetry:
-			TelemetryCommand(*packetptr);
-			break;
-		case COMMANDS::Clear_Flash:
-			ClearFlashCommand(*packetptr);
-			break;
-		case COMMANDS::Clear_SD:
-			ClearSDCommand(*packetptr);
-			break;
-		case COMMANDS::Print_Flash_filesystem:
-			break;
-		case COMMANDS::Print_Sd_filesystem:
-			break;
-		case COMMANDS::Play_Song:
-			PlaySongCommand(*packetptr);
-			break;
-		case COMMANDS::Skip_Song:
-			SkipSongCommand(*packetptr);
-			break;
-		case COMMANDS::Clear_Song_Queue:
-			ClearSongQueueCommand(*packetptr);
-			break;
-		case COMMANDS::Calibrate_AccelGyro_Bias:
-			CalibrateAccelGyroBiasCommand(*packetptr);
-			break;
-		case COMMANDS::Calibrate_Mag_Full:
-			CalibrateMagFullCommand(*packetptr);
-			break;
-		case COMMANDS::Calibrate_Baro:
-			CalibrateBaroCommand(*packetptr);
-			break;
-		case COMMANDS::Ignition:
-			IgnitionCommand(*packetptr);
-			break;
-		case COMMANDS::Set_Beta:
-			SetBetaCommand(*packetptr);
-			break;
-		case COMMANDS::Reset_Orientation:
-			ResetOrientationCommand(*packetptr);
-			break;
-		case COMMANDS::Reset_Localization:
-			ResetLocalizationCommand(*packetptr);
-			break;
-		case COMMANDS::Enter_Debug:
-			EnterDebugCommand(*packetptr);
-			break;
-		case COMMANDS::Enter_Preflight:
-			EnterPreflightCommand(*packetptr);
-			break;
-		// case COMMANDS::Enter_Groundstation:
-		// 	EnterGroundstationCommand(*packetptr);
-		// 	break;
-		case COMMANDS::Enter_Countdown:
-			EnterCountdownCommand(*packetptr);
-			break;
-		case COMMANDS::Enter_Flight:
-			EnterFlightCommand(*packetptr);
-			break;
-		case COMMANDS::Enter_Recovery:
-			EnterRecoveryCommand(*packetptr);
-			break;
-		case COMMANDS::Exit_Debug:
-			ExitDebugCommand(*packetptr);
-			break;
-		case COMMANDS::Exit_to_Debug:
-			ExitDebugCommand(*packetptr);
-			break;
-		case COMMANDS::Set_Throttle:
-			SetThrottleCommand(*packetptr);
-			break;
-		case COMMANDS::Engine_Info:
-			EngineInfoCommand(*packetptr);
-			break;
-		case COMMANDS::Pyro_info:
-			PyroInfoCommand(*packetptr);
-			break;
-		case COMMANDS::Fire_pyro:
-			FireInfoCommand(*packetptr);
-			break;
-		case COMMANDS::Free_Ram:
-			FreeRamCommand(*packetptr);
-			break;
-		default:
-			//invalid command issued DELETE IT 
-			break;
+	// switch (static_cast<COMMANDS>(CommandPacket::getCommand(*packetptr))) {
+	// 	case COMMANDS::Launch:
+	// 		LaunchCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Reset:
+	// 		ResetCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Abort:
+	// 		AbortCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Set_Home:
+	// 		SetHomeCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Start_Logging:
+	// 		StartLoggingCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Stop_Logging:
+	// 		StopLoggingCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Telemetry:
+	// 		TelemetryCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Clear_Flash:
+	// 		ClearFlashCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Clear_SD:
+	// 		ClearSDCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Print_Flash_filesystem:
+	// 		break;
+	// 	case COMMANDS::Print_Sd_filesystem:
+	// 		break;
+	// 	case COMMANDS::Play_Song:
+	// 		PlaySongCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Skip_Song:
+	// 		SkipSongCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Clear_Song_Queue:
+	// 		ClearSongQueueCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Calibrate_AccelGyro_Bias:
+	// 		CalibrateAccelGyroBiasCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Calibrate_Mag_Full:
+	// 		CalibrateMagFullCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Calibrate_Baro:
+	// 		CalibrateBaroCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Ignition:
+	// 		IgnitionCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Set_Beta:
+	// 		SetBetaCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Reset_Orientation:
+	// 		ResetOrientationCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Reset_Localization:
+	// 		ResetLocalizationCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Enter_Debug:
+	// 		EnterDebugCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Enter_Preflight:
+	// 		EnterPreflightCommand(*packetptr);
+	// 		break;
+	// 	// case COMMANDS::Enter_Groundstation:
+	// 	// 	EnterGroundstationCommand(*packetptr);
+	// 	// 	break;
+	// 	case COMMANDS::Enter_Countdown:
+	// 		EnterCountdownCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Enter_Flight:
+	// 		EnterFlightCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Enter_Recovery:
+	// 		EnterRecoveryCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Exit_Debug:
+	// 		ExitDebugCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Exit_to_Debug:
+	// 		ExitDebugCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Set_Throttle:
+	// 		SetThrottleCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Engine_Info:
+	// 		EngineInfoCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Pyro_info:
+	// 		PyroInfoCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Fire_pyro:
+	// 		FireInfoCommand(*packetptr);
+	// 		break;
+	// 	case COMMANDS::Free_Ram:
+	// 		FreeRamCommand(*packetptr);
+	// 		break;
+	// 	default:
+	// 		//invalid command issued DELETE IT 
+	// 		break;
 			
-	};
+	// };
 	
 }
 

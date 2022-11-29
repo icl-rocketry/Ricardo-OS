@@ -7,6 +7,9 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <unordered_map>
+#include <bitset>
+#include <cstdarg>
 
 #include "commands.h"
 #include "rnp_packet.h"
@@ -16,6 +19,7 @@
 
 
 class stateMachine;//forward declaration 
+typedef void (*handlerFunction)(const RnpPacketSerialized& packet);
 
 
 class CommandHandler {
@@ -33,8 +37,31 @@ class CommandHandler {
             TELEMETRY_RESPONSE = 101
         };
 
+        void enable_commands(const COMMANDS* cmds...) {
+            va_list args;
+            va_start(args, cmds);
+
+            while (*args) {
+                COMMANDS cmd = va_arg(args, COMMANDS);
+                _enabled.set(cmd);
+            }
+        }
+
+        void reset_commands(void) {
+            _enabled = _always_enabled;
+        }
+
     private:
         stateMachine* _sm; //pointer to state machine
+
+        std::unordered_map<COMMANDS, handlerFunction> _handlers;
+        std::bitset<255> _enabled;
+        constexpr std::bitset<255> _always_enabled() {
+            std::bitset bits;
+            bits.set(...);
+            ...
+            return bits;
+        };
 
         void handleCommand(std::unique_ptr<RnpPacketSerialized> packetptr);
         
