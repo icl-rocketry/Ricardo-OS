@@ -7,6 +7,10 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <unordered_map>
+#include <bitset>
+#include <cstdarg>
+#include <initializer_list>
 
 #include "commands.h"
 #include "rnp_packet.h"
@@ -16,6 +20,8 @@
 
 
 class stateMachine;//forward declaration 
+// typedef void (*handlerFunction)(const RnpPacketSerialized& packet);
+using commandFunction_t = std::function<void(stateMachine&,const RnpPacketSerialized&)>;
 
 
 class CommandHandler {
@@ -33,42 +39,39 @@ class CommandHandler {
             TELEMETRY_RESPONSE = 101
         };
 
+        template<class T>
+        void enable_commands(std::initializer_list<T> command_list) {
+            for (auto command_id : command_list){
+                _enabledCommands.set(command_id);
+            }
+        }
+
+        template<class T>
+        void disable_commands(std::initializer_list<T> command_list) {
+            for (auto command_id : command_list){
+                _enabledCommands.reset(command_id);
+            }
+        }
+
+        void reset_commands() {
+            _enabledCommands = _alwaysEnabledCommands();
+        }
+
     private:
         stateMachine* _sm; //pointer to state machine
 
+        const std::unordered_map<Commands::ID, commandFunction_t> _commandMap;
+
+        std::bitset<256> _enabledCommands;
+
+        constexpr std::bitset<256> _alwaysEnabledCommands() {
+            std::bitset<256> bits;
+            bits.set(8);
+            return bits;
+        };
+
         void handleCommand(std::unique_ptr<RnpPacketSerialized> packetptr);
         
-        void LaunchCommand(const RnpPacketSerialized& packet);
-        void ResetCommand(const RnpPacketSerialized& packet);
-        void AbortCommand(const  RnpPacketSerialized& packet);
-        void SetHomeCommand(const RnpPacketSerialized& packet);
-        void StartLoggingCommand(const RnpPacketSerialized& packet);
-        void StopLoggingCommand(const RnpPacketSerialized& packet);
-        void TelemetryCommand(const RnpPacketSerialized& packet);
-        void ClearFlashCommand(const RnpPacketSerialized& packet);
-        void ClearSDCommand(const RnpPacketSerialized& packet);
-        void PlaySongCommand(const RnpPacketSerialized& packet);
-        void SkipSongCommand(const RnpPacketSerialized& packet);
-        void ClearSongQueueCommand(const RnpPacketSerialized& packet);
-        void ResetOrientationCommand(const RnpPacketSerialized& packet);
-        void ResetLocalizationCommand(const RnpPacketSerialized& packet);
-        void SetBetaCommand(const RnpPacketSerialized& packet);
-        void CalibrateAccelGyroBiasCommand(const RnpPacketSerialized& packet);
-        void CalibrateMagFullCommand(const RnpPacketSerialized& packet);
-        void CalibrateBaroCommand(const RnpPacketSerialized& packet);
-        void IgnitionCommand(const RnpPacketSerialized& packet);
-        void EnterDebugCommand(const RnpPacketSerialized& packet);
-        void EnterPreflightCommand(const RnpPacketSerialized& packet);
-        // void EnterGroundstationCommand(const RnpPacketSerialized& packet);
-        void EnterCountdownCommand(const RnpPacketSerialized& packet);
-        void EnterFlightCommand(const RnpPacketSerialized& packet);
-        void EnterRecoveryCommand(const RnpPacketSerialized& packet);
-        void ExitDebugCommand(const RnpPacketSerialized& packet);
-        void ExitToDebugCommand(const RnpPacketSerialized& packet);
-        void EngineInfoCommand(const RnpPacketSerialized& packet);
-        void SetThrottleCommand(const RnpPacketSerialized& packet);
-        void PyroInfoCommand(const RnpPacketSerialized& packet);
-        void FireInfoCommand(const RnpPacketSerialized& packet);
-        void FreeRamCommand(const RnpPacketSerialized& packet);
+        
 
 };	

@@ -11,4 +11,3 @@ class Debug: public State {
     State* update();
     void exitstate();
 };
-
