@@ -63,7 +63,7 @@ void Sensors::setup(JsonObjectConst config){
     baro.setup();
     accelgyro.setup(axesOrder,axesFlip);
     accel.setup(axesOrder,axesFlip);
-    mag.setup(axesOrder,axesFlip);
+    // mag.setup(axesOrder,axesFlip);
     batt.setup();
     
 };
@@ -81,7 +81,7 @@ void Sensors::update()
     baro.update(sensors_raw.baro);
     accelgyro.update(sensors_raw.accelgyro);
     accel.update(sensors_raw.accel);
-    mag.update(sensors_raw.mag);
+    // mag.update(sensors_raw.mag);
     batt.update(sensors_raw.batt);
 
 };

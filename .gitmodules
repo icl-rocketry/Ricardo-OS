@@ -4,3 +4,6 @@
 [submodule "lib/librrc"]
 	path = lib/librrc
 	url = git@github.com:icl-rocketry/librrc.git
+[submodule "lib/SparkFun_u-blox_GNSS_Arduino_Library"]
+	path = lib/SparkFun_u-blox_GNSS_Arduino_Library
+	url = https://github.com/sparkfun/SparkFun_u-blox_GNSS_Arduino_Library.git

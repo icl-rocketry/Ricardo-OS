@@ -66,7 +66,7 @@ stateMachine::stateMachine() :
     enginehandler(networkmanager,engineHandlerServiceID,logcontroller),
     controllerhandler(enginehandler,logcontroller),
     eventhandler(enginehandler,deploymenthandler,logcontroller),
-    apogeedetect(200,logcontroller)
+    apogeedetect(20,logcontroller)
 {};
 
 
@@ -104,9 +104,9 @@ void stateMachine::initialise(State* initStatePtr) {
   digitalWrite(SdCs_1, HIGH);
   digitalWrite(SdCs_2, HIGH);
   //open serial port on usb interface
-  Serial.begin(Serial_baud);
   Serial.setRxBufferSize(SERIAL_SIZE_RX);
-
+  Serial.begin(Serial_baud);
+  
   // call tunez handler setup first so we can provide startup tone and auditory cues asap
   tunezhandler.setup();
 

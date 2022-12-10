@@ -146,7 +146,7 @@ void MMC5983MA::writeRegister(uint8_t reg_address, uint8_t data)
         _wire->beginTransmission(I2C_ADDRESS);
         _wire->write(reg_address);
         _wire->write(data);
-        _wire->endTransmission();
+        _wire->endTransmission(true);
         _spi->begin(); // restart spi peripheral
         
     }
@@ -191,11 +191,14 @@ void MMC5983MA::readRegister(uint8_t reg_address, uint8_t *data, uint8_t len)
         _wire->beginTransmission(I2C_ADDRESS);
         _wire->write(reg_address);
         _wire->endTransmission();
+        
+        _wire->beginTransmission(I2C_ADDRESS);
         _wire->requestFrom(I2C_ADDRESS, len);
         for (int i = 0; i < len; i++)
         {
             data[i] = _wire->read();
         }
+
         _spi->begin(); // restart spi peripheral
     }
 }

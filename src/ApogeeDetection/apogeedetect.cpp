@@ -11,8 +11,6 @@
 
 ApogeeDetect::ApogeeDetect(uint16_t sampleTime, LogController &logcontroller) : _logcontroller(logcontroller),
                                                                                 _sampleTime(sampleTime),
-                                                                                time_array{0},
-                                                                                altitude_array{0},
                                                                                 mlock(true), // intialise the mach lockout stuff
                                                                                 _apogeeinfo({false, 0, 0})
 {
@@ -94,18 +92,12 @@ void ApogeeDetect::updateSigmas(float oldTime, float newTime, float oldAlt, floa
 
 
     sigmaTime += (newTime - oldTime);
-    // sigmaTime_2 += (std::pow((newTime), 2) - std::pow((oldTime), 2));
-    // sigmaTime_3 += (std::pow((newTime), 3) - std::pow((oldTime), 3));
-    // sigmaTime_4 += (std::pow((newTime), 4) - std::pow((oldTime), 4));
-
     sigmaTime_2 += newTime_2 - oldTime_2;
     sigmaTime_3 += newTime_3 - oldTime_3;
     sigmaTime_4 += newTime_4 - oldTime_4;
 
     sigmaAlt += (newAlt - oldAlt);
 
-    // sigmaAltTime += ((newAlt * (newTime)) - (oldAlt * (oldTime)));
-    // sigmaAltTime_2 += ((newAlt * std::pow(newTime, 2)) - (oldAlt * std::pow(oldTime, 2)));
     sigmaAltTime += ((newAlt * (newTime)) - (oldAlt * (oldTime)));
     sigmaAltTime_2 += ((newAlt * newTime_2) - (oldAlt * oldTime_2));
 
@@ -117,7 +109,7 @@ void ApogeeDetect::quadraticFit(float oldTime, float newTime, float oldAlt, floa
 {
     updateSigmas(oldTime, newTime, oldAlt, newAlt); // update sigmas with new values and remove old values
     // re populate the arrays
-    A << float(arrayLen), sigmaTime, sigmaTime_2,
+    A << float(altitude_array.size()), sigmaTime, sigmaTime_2,
         sigmaTime, sigmaTime_2, sigmaTime_3,
         sigmaTime_2, sigmaTime_3, sigmaTime_4;
     
@@ -131,6 +123,6 @@ void ApogeeDetect::quadraticFit(float oldTime, float newTime, float oldAlt, floa
     std::stringstream b_str;
     b_str<<b;
     _logcontroller.log(b_str.str());
-    // solve the system for the coefficents -> if this is too slow, look into using LLT cholesky decomp
+    // solve the system for the coefficents 
     coeffs = A.colPivHouseholderQr().solve(b);
 }

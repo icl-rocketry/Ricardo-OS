@@ -7,26 +7,47 @@
 #include <Storage/logController.h>
 
 /**
- * @brief Simple ringbuf implementation based on std::array
+ * @brief Simple ringbuf implementation based on std::queue
  * 
  * @tparam T 
  * @tparam LEN 
  */
 template<typename T,size_t LEN>
-class RingBuf : public std::array<T,LEN> {
+class RingBuf : private std::queue<T> {
     public:
         /**
-         * @brief rotates the array, inserts a new value at the front and returns the removed value
+         * @brief inserts a new value at the front and returns the removed value. 
+         * Returns zero if len != maxLen
          * 
          * @param val 
          * @return T 
          */
         T pop_push_back(T val){
-            T prevVal = this->back();
-            std::rotate(this->rbegin(),this->rbegin()+1,this->rend()); // shift elements to the right by 1
-            this->at(0) = val;
-            return prevVal;
+            // push new element on queue
+            this->push(val);
+            
+            const size_t curr_size = this->size();
+
+            if (curr_size == LEN + 1){
+                T lastVal = this->front();
+                this->pop();
+                return lastVal;
+            }else 
+            if (curr_size < LEN + 1){
+                return 0;
+            }else
+            if (curr_size > LEN + 1){
+                throw std::runtime_error("RingBuf size exceeded!");
+            }
+            return 0;
+
         };
+
+        using std::queue<T>::size;
+
+    private:
+        static constexpr size_t maxLen = LEN;
+
 };
 
 struct ApogeeInfo{
@@ -58,7 +79,7 @@ public:
 private:
     LogController& _logcontroller;
     // int len_time; // The length of the time
-    static constexpr int arrayLen = 5;                  //polyval takes elements 3:5 to approximate the apogee, so 5 elements are required
+    static constexpr int arrayLen = 100;                  //polyval takes elements 3:5 to approximate the apogee, so 5 elements are required
     
     const uint16_t _sampleTime;
     uint32_t prevCheckApogeeTime{0};
