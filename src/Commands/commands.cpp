@@ -15,6 +15,8 @@
 #include "Network/interfaces/radio.h"
 #include "packets/magcalcommandpacket.h"
 
+#include "commandHandler.h"
+
 
 void Commands::LaunchCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
 {
@@ -375,7 +377,7 @@ void Commands::FreeRamCommand(stateMachine& sm, const RnpPacketSerialized& packe
 	//avliable in all states
 	//returning as simple string packet for ease
 	//currently only returning free ram
-	MessagePacket_Base<0,static_cast<uint8_t>(Commands::PACKET_TYPES::MESSAGE_RESPONSE)> message("FreeRam: " + std::to_string(esp_get_free_heap_size()));
+	MessagePacket_Base<0,static_cast<uint8_t>(CommandHandler::PACKET_TYPES::MESSAGE_RESPONSE)> message("FreeRam: " + std::to_string(esp_get_free_heap_size()));
 	message.header.source_service = serviceID;
 	message.header.destination_service = packet.header.source_service;
 	message.header.source = packet.header.destination;

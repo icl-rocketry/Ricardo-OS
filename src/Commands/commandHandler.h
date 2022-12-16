@@ -57,6 +57,8 @@ class CommandHandler {
             _enabledCommands = _alwaysEnabledCommands();
         }
 
+        
+
     private:
         stateMachine* _sm; //pointer to state machine
 
@@ -65,6 +67,7 @@ class CommandHandler {
         std::bitset<256> _enabledCommands;
 
         constexpr std::bitset<256> _alwaysEnabledCommands() {
+            
             std::bitset<256> bits;
             bits.set(8);
             return bits;
