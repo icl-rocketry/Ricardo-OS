@@ -1,14 +1,19 @@
 #pragma once
 #include <unordered_map>
 
+class freertos_mutex;
 
 
-class Storage{
+class Base_Storage{
 
-public:
+void take(task_handle_t task);
+void give(task_handle_t task);
+void mount();
 
 
-private:
+private:    
+    freertos_mutex storage_mutex;
+
 
 
 };
@@ -42,6 +47,6 @@ class Relog{
     void flush();
 
 
-std::vector<Storage&> storage_of_storages;
+    std::vector<Storage&> storage_of_storages;
 
 }
