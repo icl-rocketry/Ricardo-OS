@@ -43,7 +43,7 @@ CommandHandler::CommandHandler(stateMachine *sm) : _sm(sm),
 													   {Commands::ID::Pyro_info, Commands::PyroInfoCommand},
 													   {Commands::ID::Fire_pyro, Commands::FireInfoCommand},
 													   {Commands::ID::Free_Ram, Commands::FreeRamCommand}},
-													   _enabledCommands(_alwaysEnabledCommands()) {};
+													   _enabledCommands(_alwaysEnabledCommands) {};
 
 void CommandHandler::handleCommand(std::unique_ptr<RnpPacketSerialized> packetptr)
 {

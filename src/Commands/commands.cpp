@@ -17,13 +17,15 @@
 
 #include "commandHandler.h"
 
+#include "stateMachine.h"
+
 
 void Commands::LaunchCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
 {
 	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT)){
 		return;
 	}
-	sm.changeState(new Launch(_sm));
+	sm.changeState(new Launch(&sm));
 }
 
 void Commands::ResetCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
@@ -44,11 +46,11 @@ void Commands::AbortCommand(stateMachine& sm,const  RnpPacketSerialized& packet)
 	if(sm.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_LAUNCH)){
 		//check if we are in no abort time region
 		//close all valves
-		sm.changeState(new Preflight(_sm));
+		sm.changeState(new Preflight(&sm));
 	}else if (sm.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_FLIGHT)){
 		//this behaviour needs to be confirmed with recovery 
 		//might be worth waiting for acceleration to be 0 after rocket engine cut
-		sm.changeState(new Recovery(_sm));
+		sm.changeState(new Recovery(&sm));
 	}
 }
 
@@ -86,9 +88,12 @@ void Commands::TelemetryCommand(stateMachine& sm, const RnpPacketSerialized& pac
 	auto raw_sensors = sm.sensors.getData();
 	auto estimator_state = sm.estimator.getData();
 
-	telemetry.header.type = static_cast<uint8_t>(Commands::PACKET_TYPES::TELEMETRY_RESPONSE);
+	telemetry.header.type = static_cast<uint8_t>(CommandHandler::PACKET_TYPES::TELEMETRY_RESPONSE);
 	telemetry.header.source = sm.networkmanager.getAddress();
-	telemetry.header.source_service = serviceID;
+	// this is not great as it assumes a single command handler with the same service ID
+	// would be better if we could pass some context through the function paramters so it has an idea who has called it
+	// or make it much clearer that only a single command handler should exist in the system
+	telemetry.header.source_service = sm.commandhandler.serviceID;
 	telemetry.header.destination = commandpacket.header.source;
 	telemetry.header.destination_service = commandpacket.header.source_service;
 	telemetry.header.uid = commandpacket.header.uid; 
@@ -247,7 +252,7 @@ void Commands::CalibrateMagFullCommand(stateMachine& sm, const RnpPacketSerializ
 		return;
 	}
 	//check packet type received
-	if (packet.header.type != static_cast<uint8_t>(Commands::PACKET_TYPES::MAGCAL)){
+	if (packet.header.type != static_cast<uint8_t>(CommandHandler::PACKET_TYPES::MAGCAL)){
 		//incorrect packet type received do not deserialize
 		return;
 	}
@@ -286,7 +291,7 @@ void Commands::EnterDebugCommand(stateMachine& sm, const RnpPacketSerialized& pa
 	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT)){
 		return;
 	}
-	sm.changeState(new Debug(_sm));
+	sm.changeState(new Debug(&sm));
 	sm.systemstatus.newFlag(SYSTEM_FLAG::DEBUG);
 }
 
@@ -295,7 +300,7 @@ void Commands::EnterPreflightCommand(stateMachine& sm, const RnpPacketSerialized
 	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
 		return;
 	}
-	sm.changeState(new Preflight(_sm));
+	sm.changeState(new Preflight(&sm));
 }
 
 // void Commands::EnterGroundstationCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
@@ -303,7 +308,7 @@ void Commands::EnterPreflightCommand(stateMachine& sm, const RnpPacketSerialized
 // 	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
 // 		return;
 // 	}
-// 	sm.changeState(new Groundstation(_sm));
+// 	sm.changeState(new Groundstation(&sm));
 // }
 
 void Commands::EnterCountdownCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
@@ -311,7 +316,7 @@ void Commands::EnterCountdownCommand(stateMachine& sm, const RnpPacketSerialized
 	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
 		return;
 	}
-	sm.changeState(new Launch(_sm));
+	sm.changeState(new Launch(&sm));
 }
 
 void Commands::EnterFlightCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
@@ -319,7 +324,7 @@ void Commands::EnterFlightCommand(stateMachine& sm, const RnpPacketSerialized& p
 	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
 		return;
 	}
-	sm.changeState(new Flight(_sm));
+	sm.changeState(new Flight(&sm));
 }
 
 void Commands::EnterRecoveryCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
@@ -327,7 +332,7 @@ void Commands::EnterRecoveryCommand(stateMachine& sm, const RnpPacketSerialized&
 	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
 		return;
 	}
-	sm.changeState(new Recovery(_sm));
+	sm.changeState(new Recovery(&sm));
 }
 
 void Commands::ExitDebugCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
@@ -335,9 +340,9 @@ void Commands::ExitDebugCommand(stateMachine& sm, const RnpPacketSerialized& pac
 	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
 		return;
 	}
-	sm.changeState(new Debug(_sm));
+	sm.changeState(new Debug(&sm));
 	sm.systemstatus.deleteFlag(SYSTEM_FLAG::DEBUG);
-	sm.changeState(new Preflight(_sm));
+	sm.changeState(new Preflight(&sm));
 }
 
 void Commands::ExitToDebugCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
@@ -345,7 +350,7 @@ void Commands::ExitToDebugCommand(stateMachine& sm, const RnpPacketSerialized& p
 	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
 		return;
 	}
-	sm.changeState(new Debug(_sm));
+	sm.changeState(new Debug(&sm));
 }
 
 void Commands::EngineInfoCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
@@ -378,7 +383,12 @@ void Commands::FreeRamCommand(stateMachine& sm, const RnpPacketSerialized& packe
 	//returning as simple string packet for ease
 	//currently only returning free ram
 	MessagePacket_Base<0,static_cast<uint8_t>(CommandHandler::PACKET_TYPES::MESSAGE_RESPONSE)> message("FreeRam: " + std::to_string(esp_get_free_heap_size()));
-	message.header.source_service = serviceID;
+	// this is not great as it assumes a single command handler with the same service ID
+	// would be better if we could pass some context through the function paramters so it has an idea who has called it
+	// or make it much clearer that only a single command handler should exist in the system
+	message.header.source_service = sm.commandhandler.serviceID; 
+	
+	
 	message.header.destination_service = packet.header.source_service;
 	message.header.source = packet.header.destination;
 	message.header.destination = packet.header.source;

@@ -29,7 +29,9 @@ class CommandHandler {
         CommandHandler(stateMachine* sm);
         
         std::function<void(std::unique_ptr<RnpPacketSerialized>)> getCallback();
- 
+        
+        //this aint great, it forces only a sinlge command handler in the whole system 
+        //need to think of a better way to do this
         static constexpr uint8_t serviceID = static_cast<uint8_t>(DEFAULT_SERVICES::COMMAND); // serivce ID for network manager
         
         enum class PACKET_TYPES:uint8_t{
@@ -54,7 +56,7 @@ class CommandHandler {
         }
 
         void reset_commands() {
-            _enabledCommands = _alwaysEnabledCommands();
+            _enabledCommands = _alwaysEnabledCommands;
         }
 
         
@@ -66,12 +68,15 @@ class CommandHandler {
 
         std::bitset<256> _enabledCommands;
 
-        constexpr std::bitset<256> _alwaysEnabledCommands() {
+        static constexpr std::bitset<256> _alwaysEnabledCommands {0b00000001};
+        
+        
+        // {
             
-            std::bitset<256> bits;
-            bits.set(8);
-            return bits;
-        };
+        //     std::bitset<256> bits;
+        //     bits.set(8);
+        //     return bits;
+        // };
 
         void handleCommand(std::unique_ptr<RnpPacketSerialized> packetptr);
         
