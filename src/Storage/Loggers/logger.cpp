@@ -10,6 +10,7 @@ device(dev)
 
 bool LogFile::write(const void* buf, size_t len) 
 {
+    DeviceMutex lock(device, _sc);
     if (device != STORAGE_DEVICE::NONE){//dont attempty to write if we are a none device
         int current_status  = file.write(buf,len);
         if (current_status == -1){
@@ -40,12 +41,18 @@ void LogFile::open(const std::string filepath)
 
 void LogFile::close() 
 {
+    while (unfinished_flushes > 0) delay(10); // Wait for all outstanding flushes to finish before we even try to close the file
+    DeviceMutex lock(device, _sc);
     file.close();
 };
 
 void LogFile::flush()
 {
+    unfinished_flushes++;
+    DeviceMutex lock(device, _sc);
     file.flush();
+    unfinished_flushes--;
+
 };
 
 

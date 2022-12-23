@@ -19,7 +19,16 @@ _sm(sm),
 microsd(&(sm->vspi)),
 flashTransport(SdCs_2,&(sm->vspi)),
 flash(&flashTransport)
-{};
+{
+    // See https://www.freertos.org/xSemaphoreCreateRecursiveMutexStatic.html
+    // Mutex aka lock - allows us to use priorities
+    // Recursive - allows 1 task to reacquire its own lock
+    // Static - no need to delete it later
+    for (int i = 0; i < 5; i++) {
+        locks[i] = xSemaphoreCreateRecursiveMutexStatic(&lock_buffer[i]);
+        configASSERT(locks[i]); // TODO - maybe the assert isn't the best idea here
+    }
+};
 
 void StorageController::setup(){
 
@@ -55,6 +64,7 @@ void StorageController::setup(){
 std::string StorageController::getUniqueDirectory(std::string input_directory,STORAGE_DEVICE device){
     // Looks for the highest numbered log folder and increments by one
     std::vector<directory_element_t> fileNames;
+    DeviceMutex lock(device, *this);
 
     mkdir(input_directory,device); // ensure directory exists
 
@@ -103,6 +113,7 @@ int StorageController::getFileNameIndex(const std::string fileName) {
 }
 
 bool StorageController::mkdir(std::string path,STORAGE_DEVICE device){
+    DeviceMutex lock(device, *this);
     bool alreadyPresent = false;
     switch(device){
         case STORAGE_DEVICE::MICROSD:{
@@ -132,6 +143,7 @@ bool StorageController::mkdir(std::string path,STORAGE_DEVICE device){
 }
 
 bool StorageController::ls(std::string path,std::vector<directory_element_t> &directory_structure,STORAGE_DEVICE device){
+    DeviceMutex lock(device, *this);
     bool status;
     switch(device){
         case STORAGE_DEVICE::MICROSD:{
@@ -159,6 +171,7 @@ bool StorageController::ls(std::vector<directory_element_t> &directory_structure
 
 
 void StorageController::printDirectory(std::string path,STORAGE_DEVICE device){ // function just to check functionality of ls
+    DeviceMutex lock(device, *this);
     std::vector<directory_element_t> directory;
     ls(path,directory,device);
         for (int i = 0;i < directory.size(); i++){
@@ -176,6 +189,7 @@ void StorageController::printDirectory(std::string path,STORAGE_DEVICE device){ 
 
 
 File StorageController::open(std::string path, STORAGE_DEVICE device,oflag_t mode){
+    DeviceMutex lock(device, *this);
     File ret;
     switch(device){
         case(STORAGE_DEVICE::MICROSD):{
@@ -197,10 +211,11 @@ File StorageController::open(std::string path, STORAGE_DEVICE device,oflag_t mod
 }
 
 bool StorageController::erase(STORAGE_DEVICE device){ 
-
     bool error = false;
 
     _sm->logcontroller.stopLogging(LOG_TYPE::ALL);
+
+    DeviceMutex lock(device, *this); // Acquire the lock here to allow the logs to be flushed
 
     switch(device){
         case(STORAGE_DEVICE::MICROSD):{
@@ -237,10 +252,12 @@ bool StorageController::erase(STORAGE_DEVICE device){
     
 }
 
-bool StorageController::format(STORAGE_DEVICE device){ 
+bool StorageController::format(STORAGE_DEVICE device){
     bool error = false;
 
     _sm->logcontroller.stopLogging(LOG_TYPE::ALL);
+
+    DeviceMutex lock(device, *this); // Acquire the lock here to allow the logs to be flushed
 
     switch(device){
         case(STORAGE_DEVICE::MICROSD):{
@@ -277,6 +294,8 @@ bool StorageController::format(STORAGE_DEVICE device){
     
 }
 
+// No locking needed as this is only called by the other 2 ls implementations
+// Both of which lock for you
 bool StorageController::ls(std::string path,std::vector<directory_element_t> &directory_structure,FatFileSystem* fs){
     File _file;
     fs->chvol(); // cahnge vol to fs provided
@@ -316,8 +335,8 @@ bool StorageController::ls(std::string path,std::vector<directory_element_t> &di
     return true;
 }
 
+// Doesn't need locking because the caller will do it
 bool StorageController::rmParent(std::string path, FatFileSystem* fs) {    
-
     // ls path
     // for each in path
     //      if isDir
@@ -343,6 +362,7 @@ bool StorageController::rmParent(std::string path, FatFileSystem* fs) {
     
 
 void StorageController::generateDirectoryStructure(STORAGE_DEVICE device){
+    DeviceMutex lock(device, *this);
     //ensure the expected directory structure is present
     /*
 
@@ -403,3 +423,6 @@ void StorageController::reportStatus(STORAGE_DEVICE device,DEVICE_STATE state)
     
 }
 
+SemaphoreHandle_t StorageController::getDeviceLock(STORAGE_DEVICE device) {
+    return locks[static_cast<int>(device)];
+}

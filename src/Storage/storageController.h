@@ -8,6 +8,8 @@
 #include <vector>
 #include <SdFat.h>
 
+#include "freertos/semphr.h"
+
 
 
 class stateMachine; //forward declaration to prevent ciruclar dependancy
@@ -118,6 +120,15 @@ class StorageController{
          */
         void reportStatus(STORAGE_DEVICE device,DEVICE_STATE error);
 
+        /**
+         * @brief Get the lock for a device - DOESN'T ACQUIRE IT
+         * 
+         * @param device
+         * 
+         * @return The actual lock
+        */
+        SemaphoreHandle_t getDeviceLock(STORAGE_DEVICE device);
+
 
     private:
         stateMachine *_sm;//pointer to state machine
@@ -129,13 +140,32 @@ class StorageController{
         Adafruit_SPIFlash flash;// flash storage object
 
         FatFileSystem flash_fatfs;//flash filesystem
+
+        // Have 1 lock per type of storage
+        // Even None for now to make the code look nicer
+        // No idea why this needs 2 variables
+        StaticSemaphore_t lock_buffer[5]; // Static so we don't worry about freeing it
+        SemaphoreHandle_t locks[5];
         
         int getFileNameIndex(const std::string fileName); // Extracts the index of the file from file name (e.g. returns 4 when input is logs_flight_4)
         bool ls(std::string path,std::vector<directory_element_t> &directory_structure,FatFileSystem* fs);
        
         bool rmParent(std::string path, FatFileSystem* fs); // remove all files under directory -> deletes path
-        
-        
+};
+
+// https://i.kym-cdn.com/photos/images/newsfeed/001/515/694/3b5.jpg
+class DeviceMutex {
+public:
+    DeviceMutex(STORAGE_DEVICE device, StorageController& sc) {
+        lock = sc.getDeviceLock(device);
+        while (xSemaphoreTakeRecursive(lock, (TickType_t) 10) != pdTRUE);
+    }
+    ~DeviceMutex() {
+        xSemaphoreGiveRecursive(lock);
+    }
+
+private:
+    SemaphoreHandle_t lock;
 };
 
 

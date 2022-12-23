@@ -23,8 +23,9 @@ class LogFile{
 
         File file;
         STORAGE_DEVICE device;
-        int status;
         std::string curr_filepath;
+        int status;
+        int unfinished_flushes;
 };
 
 class Logger{
