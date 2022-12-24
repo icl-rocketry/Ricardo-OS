@@ -13,7 +13,7 @@
 #include "rnp_packet.h"
 
 #include "driver/gpio.h"
-#include "driver/can.h"
+#include "driver/twai.h"
 
 #include "ricardo_pins.h"
 
@@ -102,20 +102,20 @@ class CanBus: public RnpInterface{
         CanBusInterfaceInfo _info;
 
         // CAN DRIVER CONFIG //
-        static constexpr can_general_config_t can_general_config = {.mode = CAN_MODE_NORMAL,
+        static constexpr twai_general_config_t can_general_config = {.mode = TWAI_MODE_NORMAL,
                                                                     .tx_io = (gpio_num_t) TxCan,
                                                                     .rx_io = (gpio_num_t) RxCan,
-                                                                    .clkout_io = CAN_IO_UNUSED,
-                                                                    .bus_off_io = CAN_IO_UNUSED,
+                                                                    .clkout_io = TWAI_IO_UNUSED,
+                                                                    .bus_off_io = TWAI_IO_UNUSED,
                                                                     .tx_queue_len = 20,
                                                                     .rx_queue_len = 20,
-                                                                    .alerts_enabled = CAN_ALERT_NONE,
+                                                                    .alerts_enabled = TWAI_ALERT_NONE,
                                                                     .clkout_divider = 0,
                                                                     };
         // static constexpr can_general_config_t can_general_config = CAN_GENERAL_CONFIG_DEFAULT(TxCan,RxCan,CAN_MODE_NORMAL);
 
-        static constexpr can_timing_config_t can_timing_config = CAN_TIMING_CONFIG_1MBITS();
-        static constexpr can_filter_config_t can_filter_config = CAN_FILTER_CONFIG_ACCEPT_ALL();
+        static constexpr twai_timing_config_t can_timing_config = TWAI_TIMING_CONFIG_1MBITS();
+        static constexpr twai_filter_config_t can_filter_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
         // CAN DRIVER CONFIG //
 
         uint8_t packet_counter{0};

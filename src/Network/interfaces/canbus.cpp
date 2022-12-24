@@ -12,7 +12,7 @@
 #include "rnp_packet.h"
 
 #include "driver/gpio.h"
-#include "driver/can.h"
+#include "driver/twai.h"
 
 #include "ricardo_pins.h"
 
@@ -30,12 +30,12 @@ _logcontroller(logcontroller)
 
 void CanBus::setup()
 {
-    if (can_driver_install(&can_general_config,&can_timing_config,&can_filter_config) != ESP_OK){
+    if (twai_driver_install(&can_general_config,&can_timing_config,&can_filter_config) != ESP_OK){
         _systemstatus.newFlag(SYSTEM_FLAG::ERROR_CAN,"Can iface failed to install!");
    
         return;
     }
-    if (can_start() != ESP_OK){
+    if (twai_start() != ESP_OK){
         _systemstatus.newFlag(SYSTEM_FLAG::ERROR_CAN,"Can Iface failed to start!");
     
         return;
@@ -105,14 +105,14 @@ void CanBus::processSendBuffer(){
     uint8_t offset = curr_seg_id*8;
     uint8_t bytes_left = data_size - offset;
 
-    can_message_t can_packet;
+    twai_message_t can_packet;
     can_packet.identifier = packet.canidentifier.getIdentifier();
-    can_packet.flags = CAN_MSG_FLAG_EXTD;
+    can_packet.flags = TWAI_MSG_FLAG_EXTD;
     can_packet.data_length_code = (bytes_left > 8) ? 8 : bytes_left;
 
     std::memcpy(&can_packet.data,packet.bytedata.data() + offset,can_packet.data_length_code);
     
-    int err = can_transmit(&can_packet,0);//non blocking send
+    int err = twai_transmit(&can_packet,0);//non blocking send
     if (err != ESP_OK){
         if (err == ESP_ERR_TIMEOUT || err == ESP_FAIL){
             // can tx buffer full, dont increment seg_id and try to place on buffer next update
@@ -141,8 +141,8 @@ void CanBus::processSendBuffer(){
 };
 
 void CanBus::processReceivedPackets(){
-    can_message_t can_packet;
-    int err = can_receive(&can_packet,0);
+    twai_message_t can_packet;
+    int err = twai_receive(&can_packet,0);
     if (err != ESP_OK){
         if (err != ESP_ERR_TIMEOUT){
             if (!_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_CAN)){
@@ -152,7 +152,7 @@ void CanBus::processReceivedPackets(){
         return;
     }
 
-    if (!(can_packet.flags & CAN_MSG_FLAG_EXTD)){
+    if (!(can_packet.flags & TWAI_MSG_FLAG_EXTD)){
         _logcontroller.log("Bad Can Packet Type, Packet Dumped!");
         return;
     }
