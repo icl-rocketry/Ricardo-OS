@@ -16,23 +16,24 @@ elif [ $1 == "run" ]
 then
     qemu-system-xtensa -nographic \
         -machine esp32 \
+        -global driver=timer.esp32.timg,property=wdt_disable,value=true \
+        -drive file=build/sd_image.bin,if=sd,format=raw \
         -drive file=build/merged.bin,if=mtd,format=raw
-        -global driver=timer.esp32.timg,property=wdt_disable,value=true
-        -drive file=build/sd_image.bin,if=sd,format=raw
 
 elif [ $1 == "debug" ]
 then
     export QEMU_XTENSA_CORE_REGS_ONLY=1
     qemu-system-xtensa -nographic -s -S \
         -machine esp32 \
+        -global driver=timer.esp32.timg,property=wdt_disable,value=true \
+        -drive file=build/sd_image.bin,if=sd,format=raw \
         -drive file=build/merged.bin,if=mtd,format=raw
-        -global driver=timer.esp32.timg,property=wdt_disable,value=true
-        -drive file=build/sd_image.bin,if=sd,format=raw
 elif [ $1 == "attach" ]
 then
     xtensa-esp32-elf-gdb .pio/build/esp32dev_idf4.4/firmware.elf \
         -ex "target remote :1234" \
         -ex "monitor system_reset" \
+        -ex "layout src" \
         -ex "tb app_main" -ex "c"
 fi
 
