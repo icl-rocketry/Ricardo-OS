@@ -22,27 +22,16 @@
 
 void Commands::LaunchCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
 {
-	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT)){
-		return;
-	}
 	sm.changeState(new Launch(&sm));
 }
 
 void Commands::ResetCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
-{
-	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_RECOVERY,SYSTEM_FLAG::STATE_GROUNDSTATION)){
-		return;
-	}
-	
+{	
 	ESP.restart(); 
-
 }
 
 void Commands::AbortCommand(stateMachine& sm,const  RnpPacketSerialized& packet) 
 {
-	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_LAUNCH,SYSTEM_FLAG::STATE_FLIGHT)){
-		return;
-	}
 	if(sm.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_LAUNCH)){
 		//check if we are in no abort time region
 		//close all valves
@@ -56,7 +45,7 @@ void Commands::AbortCommand(stateMachine& sm,const  RnpPacketSerialized& packet)
 
 void Commands::SetHomeCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
 {
-	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
+	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	sm.estimator.setHome(sm.sensors.getData());
@@ -72,7 +61,7 @@ void Commands::StartLoggingCommand(stateMachine& sm, const RnpPacketSerialized& 
 
 void Commands::StopLoggingCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
 {
-	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::DEBUG)){
+	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	SimpleCommandPacket commandpacket(packet);
@@ -93,7 +82,7 @@ void Commands::TelemetryCommand(stateMachine& sm, const RnpPacketSerialized& pac
 	// this is not great as it assumes a single command handler with the same service ID
 	// would be better if we could pass some context through the function paramters so it has an idea who has called it
 	// or make it much clearer that only a single command handler should exist in the system
-	telemetry.header.source_service = sm.commandhandler.serviceID;
+	telemetry.header.source_service = sm.commandhandler.getServieID();
 	telemetry.header.destination = commandpacket.header.source;
 	telemetry.header.destination_service = commandpacket.header.source_service;
 	telemetry.header.uid = commandpacket.header.uid; 
@@ -167,7 +156,7 @@ void Commands::TelemetryCommand(stateMachine& sm, const RnpPacketSerialized& pac
 
 void Commands::ClearFlashCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
 {
-	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::STATE_GROUNDSTATION,SYSTEM_FLAG::DEBUG)){
+	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	sm.storagecontroller.erase(STORAGE_DEVICE::FLASH);
@@ -177,7 +166,7 @@ void Commands::ClearFlashCommand(stateMachine& sm, const RnpPacketSerialized& pa
 
 void Commands::ClearSDCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
 {
-	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT,SYSTEM_FLAG::STATE_GROUNDSTATION,SYSTEM_FLAG::DEBUG)){
+	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
 		return;
 	}
 	sm.storagecontroller.erase(STORAGE_DEVICE::MICROSD);
@@ -186,9 +175,7 @@ void Commands::ClearSDCommand(stateMachine& sm, const RnpPacketSerialized& packe
 
 void Commands::PlaySongCommand(stateMachine& sm, const RnpPacketSerialized& packet) 
 {
-	if(!sm.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_PREFLIGHT)){
-		return;
-	}
+
 	SimpleCommandPacket commandpacket(packet);
 	sm.tunezhandler.play_by_idx(commandpacket.arg);
 }
@@ -386,7 +373,7 @@ void Commands::FreeRamCommand(stateMachine& sm, const RnpPacketSerialized& packe
 	// this is not great as it assumes a single command handler with the same service ID
 	// would be better if we could pass some context through the function paramters so it has an idea who has called it
 	// or make it much clearer that only a single command handler should exist in the system
-	message.header.source_service = sm.commandhandler.serviceID; 
+	message.header.source_service = sm.commandhandler.getServieID(); 
 	
 	
 	message.header.destination_service = packet.header.source_service;

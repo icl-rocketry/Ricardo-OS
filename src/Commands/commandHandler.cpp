@@ -10,7 +10,8 @@
 
 #include "flags.h"
 
-CommandHandler::CommandHandler(stateMachine *sm) : _sm(sm),
+CommandHandler::CommandHandler(stateMachine *sm) : RnpNetworkService(serviceID),
+													_sm(sm),
 												   _commandMap{
 													   {Commands::ID::Launch, Commands::LaunchCommand},
 													   {Commands::ID::Reset, Commands::ResetCommand},
@@ -47,6 +48,7 @@ CommandHandler::CommandHandler(stateMachine *sm) : _sm(sm),
 
 void CommandHandler::handleCommand(std::unique_ptr<RnpPacketSerialized> packetptr)
 {
+	
 	command_t cmd = CommandPacket::getCommand(*packetptr);
 	if (_enabledCommands.test(cmd))
 	{
@@ -54,10 +56,3 @@ void CommandHandler::handleCommand(std::unique_ptr<RnpPacketSerialized> packetpt
 	}
 }
 
-std::function<void(std::unique_ptr<RnpPacketSerialized>)> CommandHandler::getCallback()
-{
-	return [this](packetptr_t packetptr)
-	{ 
-		handleCommand(std::move((packetptr))); 
-	};
-};

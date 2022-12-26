@@ -50,7 +50,7 @@ class stateMachine {
   public:
     stateMachine();// The constructor
     //functions
-    void initialise(State* initStatePtr);
+    void initialise(State* initStatePtr); // use perfect forwarding to trasnfer to std::unique_ptr
     void update();
     void changeState(State* newStatePtr);
 

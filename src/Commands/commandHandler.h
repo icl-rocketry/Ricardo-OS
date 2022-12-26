@@ -15,6 +15,7 @@
 #include "commands.h"
 #include "rnp_packet.h"
 #include "rnp_networkmanager.h"
+#include "rnp_networkservice.h"
 #include <default_packets/simplecommandpacket.h>
 
 
@@ -24,11 +25,9 @@ class stateMachine;//forward declaration
 using commandFunction_t = std::function<void(stateMachine&,const RnpPacketSerialized&)>;
 
 
-class CommandHandler {
+class CommandHandler: public RnpNetworkService{
     public:
         CommandHandler(stateMachine* sm);
-        
-        std::function<void(std::unique_ptr<RnpPacketSerialized>)> getCallback();
         
         //this aint great, it forces only a sinlge command handler in the whole system 
         //need to think of a better way to do this
@@ -41,6 +40,12 @@ class CommandHandler {
             TELEMETRY_RESPONSE = 101
         };
 
+        /**
+         * @brief Enables a list of command ids to be executed
+         * 
+         * @tparam T 
+         * @param command_list 
+         */
         template<class T>
         void enable_commands(std::initializer_list<T> command_list) {
             for (auto command_id : command_list){
@@ -48,12 +53,22 @@ class CommandHandler {
             }
         }
 
+        /**
+         * @brief Disables passed command id as long as it is not set in always enabled commands
+         * 
+         * @tparam T 
+         * @param command_list 
+         */
         template<class T>
         void disable_commands(std::initializer_list<T> command_list) {
             for (auto command_id : command_list){
                 _enabledCommands.reset(command_id);
+                
             }
+            //ensure that _alwaysEnabledCommands arent disabled 
+            _enabledCommands |= _alwaysEnabledCommands;
         }
+
 
         void reset_commands() {
             _enabledCommands = _alwaysEnabledCommands;
@@ -70,16 +85,22 @@ class CommandHandler {
 
         static constexpr std::bitset<256> _alwaysEnabledCommands {0b00000001};
         
-        
-        // {
-            
-        //     std::bitset<256> bits;
-        //     bits.set(8);
-        //     return bits;
-        // };
 
+        /**
+         * @brief Process the recevied command packet 
+         * 
+         * @param packetptr 
+         */
         void handleCommand(std::unique_ptr<RnpPacketSerialized> packetptr);
-        
-        
 
+        /**
+         * @brief Simply a wrapper for handleCommand function for readability
+         * 
+         * @param packetptr 
+         */
+        void networkCallback(packetptr_t packetptr) override
+        {
+            handleCommand(std::move(packetptr));
+        };
+        
 };	
