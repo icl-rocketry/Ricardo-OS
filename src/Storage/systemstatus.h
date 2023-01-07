@@ -10,7 +10,7 @@ handles all messages as a bitfield so multiple messages can be contained in a si
 #include <string>
 #include "Helpers/bitwiseflagmanager.h"
 
-class SystemStatus:public BitwiseFlagManager<SYSTEM_FLAG,system_flag_t>{
+class SystemStatus:public BitwiseFlagManager<SYSTEM_FLAG>{
     public:
         
         SystemStatus(LogController& logcontroller);

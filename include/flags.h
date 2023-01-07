@@ -36,6 +36,7 @@ enum class SYSTEM_FLAG:uint32_t{
     WARN_BATT = (1 << 24),
     //FLIGHTPHASES 
     FLIGHTPHASE_BOOST = (1 << 25),
+    
     FLIGHTPHASE_COAST = (1 << 26),
     FLIGHTPHASE_APOGEE = (1 << 27)
     
