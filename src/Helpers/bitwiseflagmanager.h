@@ -12,7 +12,6 @@
 #pragma once
 #include <type_traits>
 
-// template<typename T,typename T_underlying = T>
 template<typename T,typename T_underlying = typename std::underlying_type<T>::type>
 class BitwiseFlagManager
 {

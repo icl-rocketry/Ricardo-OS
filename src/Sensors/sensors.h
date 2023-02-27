@@ -62,6 +62,7 @@ public:
 private:
     SensorStructs::raw_measurements_t sensors_raw;
     SystemStatus& _systemstatus;
+    TwoWire I2C_2;
 
     Max_M8Q gps;
     MS5607 baro;

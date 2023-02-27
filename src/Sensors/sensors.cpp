@@ -35,12 +35,13 @@
 
 Sensors::Sensors(SPIClass& spi,TwoWire& I2C,SystemStatus& systemstatus,LogController& logcontroller) :
     _systemstatus(systemstatus),
+    I2C_2(1),
     gps(I2C,systemstatus,logcontroller),
     baro(spi,systemstatus,logcontroller,BaroCs),
     accelgyro(spi,systemstatus,logcontroller,ImuCs_1),
     accel(spi,systemstatus,logcontroller,ImuCs_2),
     // mag(spi,MagCs,systemstatus,logcontroller), // SPI constructor
-    mag(Wire1,H_SCLK,H_MOSI,spi,MagCs,systemstatus,logcontroller),
+    mag(I2C_2,H_SCLK,H_MOSI,spi,MagCs,systemstatus,logcontroller),
     batt(systemstatus,logcontroller,BattVolt),
     logcontroller(logcontroller)
     
@@ -63,8 +64,9 @@ void Sensors::setup(JsonObjectConst config){
     baro.setup();
     accelgyro.setup(axesOrder,axesFlip);
     accel.setup(axesOrder,axesFlip);
-    // mag.setup(axesOrder,axesFlip);
+    mag.setup(axesOrder,axesFlip);
     batt.setup();
+    
     
 };
 
@@ -81,7 +83,7 @@ void Sensors::update()
     baro.update(sensors_raw.baro);
     accelgyro.update(sensors_raw.accelgyro);
     accel.update(sensors_raw.accel);
-    // mag.update(sensors_raw.mag);
+    mag.update(sensors_raw.mag);
     batt.update(sensors_raw.batt);
 
 };

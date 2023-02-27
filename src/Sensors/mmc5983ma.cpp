@@ -63,12 +63,14 @@ void MMC5983MA::setup(const std::array<uint8_t,3>& axesOrder,const std::array<bo
     delay(100);
 
     loadMagCal(); // load calibration from nvs
-
+    Serial.println("load calibration");
+   
     if (!alive())
     {
         _systemstatus.newFlag(SYSTEM_FLAG::ERROR_MAG, "Unable to initialize the MMC5983MA");
         return;
     }
+    Serial.println("alive");
 
     axeshelper.setOrder(axesOrder);
     axeshelper.setFlip(axesFlip);
@@ -146,7 +148,8 @@ void MMC5983MA::writeRegister(uint8_t reg_address, uint8_t data)
         _wire->beginTransmission(I2C_ADDRESS);
         _wire->write(reg_address);
         _wire->write(data);
-        _wire->endTransmission(true);
+        _wire->endTransmission();
+        _wire->end();
         _spi->begin(); // restart spi peripheral
         
     }
@@ -185,20 +188,31 @@ void MMC5983MA::readRegister(uint8_t reg_address, uint8_t *data, uint8_t len)
     }
     else
     {
+        // Serial.println("read reg");
         _spi->end();
-        _wire->begin(_sda,_scl,400000); // start wire bus on specified pins as master
+
+        digitalWrite(_cs, LOW);
         digitalWrite(_cs, HIGH);
-        _wire->beginTransmission(I2C_ADDRESS);
-        _wire->write(reg_address);
-        _wire->endTransmission();
+
+        _wire->begin(_sda,_scl,400000); // start wire bus on specified pins as master
+        // Serial.println("wire began");
+
         
         _wire->beginTransmission(I2C_ADDRESS);
+        _wire->write(reg_address);
+
+        _wire->endTransmission();
+        
+        // _wire->beginTransmission(I2C_ADDRESS);
         _wire->requestFrom(I2C_ADDRESS, len);
+        // Serial.println("data");
         for (int i = 0; i < len; i++)
         {
             data[i] = _wire->read();
+            // Serial.println(data[i]);
+            
         }
-
+        _wire->end();
         _spi->begin(); // restart spi peripheral
     }
 }

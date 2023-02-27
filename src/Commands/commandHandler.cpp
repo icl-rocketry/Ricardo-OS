@@ -50,9 +50,10 @@ void CommandHandler::handleCommand(std::unique_ptr<RnpPacketSerialized> packetpt
 {
 	
 	command_t cmd = CommandPacket::getCommand(*packetptr);
-	if (_enabledCommands.test(cmd))
-	{
-		_commandMap.at(static_cast<Commands::ID>(cmd))(*_sm,*packetptr);
-	}
+	_commandMap.at(static_cast<Commands::ID>(cmd))(*_sm,*packetptr);
+	// if (_enabledCommands.test(cmd))
+	// {
+		
+	// }
 }
 
