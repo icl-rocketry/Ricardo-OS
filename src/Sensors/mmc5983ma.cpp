@@ -188,29 +188,20 @@ void MMC5983MA::readRegister(uint8_t reg_address, uint8_t *data, uint8_t len)
     }
     else
     {
-        // Serial.println("read reg");
         _spi->end();
 
         digitalWrite(_cs, LOW);
         digitalWrite(_cs, HIGH);
 
-        _wire->begin(_sda,_scl,400000); // start wire bus on specified pins as master
-        // Serial.println("wire began");
-
-        
+        _wire->begin(_sda,_scl,400000); // start wire bus on specified pins as master    
         _wire->beginTransmission(I2C_ADDRESS);
         _wire->write(reg_address);
-
         _wire->endTransmission();
-        
-        // _wire->beginTransmission(I2C_ADDRESS);
         _wire->requestFrom(I2C_ADDRESS, len);
-        // Serial.println("data");
+
         for (int i = 0; i < len; i++)
         {
             data[i] = _wire->read();
-            // Serial.println(data[i]);
-            
         }
         _wire->end();
         _spi->begin(); // restart spi peripheral
